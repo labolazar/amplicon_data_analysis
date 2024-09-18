@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 4 Rarefaction | Example workflow of amplicon sequence data analysis</title>
+  <meta name="description" content="Chapter 4 Rarefaction | Example workflow of amplicon sequence data analysis" />
+  <meta name="generator" content="bookdown 0.35 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 4 Rarefaction | Example workflow of amplicon sequence data analysis" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 4 Rarefaction | Example workflow of amplicon sequence data analysis" />
+  
+  
+  
+
+<meta name="author" content="Karine Villeneuve" />
+
+
+<meta name="date" content="2023-11-20" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="dada2-pipeline.html"/>
+<link rel="next" href="stacked-taxonomy-bar-graphs.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+<link rel="stylesheet" href="toc.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Workflow for amplicon sequence analysis</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#setting-up-your-environment"><i class="fa fa-check"></i><b>1.1</b> Setting up your environment</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#download-fastqs-files-from-illumina-basespace-sequence-hub"><i class="fa fa-check"></i><b>1.2</b> Download fastqs files from Illumina BaseSpace Sequence Hub</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="basic-r-markdown.html"><a href="basic-r-markdown.html"><i class="fa fa-check"></i><b>2</b> Basic R Markdown</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="basic-r-markdown.html"><a href="basic-r-markdown.html#introduction-à-rstudio-et-rmarkdown"><i class="fa fa-check"></i><b>2.1</b> Introduction à Rstudio et Rmarkdown</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="basic-r-markdown.html"><a href="basic-r-markdown.html#bloc-de-codes"><i class="fa fa-check"></i><b>2.1.1</b> Bloc de codes</a></li>
+<li class="chapter" data-level="2.1.2" data-path="basic-r-markdown.html"><a href="basic-r-markdown.html#commandes-de-bases"><i class="fa fa-check"></i><b>2.1.2</b> Commandes de bases</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html"><i class="fa fa-check"></i><b>3</b> DADA2 pipeline</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#general-workflow"><i class="fa fa-check"></i><b>3.1</b> General workflow</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#getting-ready"><i class="fa fa-check"></i><b>3.1.1</b> Getting ready</a></li>
+<li class="chapter" data-level="3.1.2" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#inspect-quality"><i class="fa fa-check"></i><b>3.1.2</b> Inspect quality</a></li>
+<li class="chapter" data-level="3.1.3" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#filter-and-trim-sequences"><i class="fa fa-check"></i><b>3.1.3</b> Filter and trim sequences</a></li>
+<li class="chapter" data-level="3.1.4" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#learn-error-rates"><i class="fa fa-check"></i><b>3.1.4</b> Learn error rates</a></li>
+<li class="chapter" data-level="3.1.5" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#merge-paired-reads"><i class="fa fa-check"></i><b>3.1.5</b> Merge paired reads</a></li>
+<li class="chapter" data-level="3.1.6" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#track-reads-through-pipeline"><i class="fa fa-check"></i><b>3.1.6</b> Track reads through pipeline</a></li>
+<li class="chapter" data-level="3.1.7" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#classify-sequences"><i class="fa fa-check"></i><b>3.1.7</b> Classify sequences</a></li>
+<li class="chapter" data-level="3.1.8" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#add-highest-identified-taxonomic-rank-to-unclassified-ranks"><i class="fa fa-check"></i><b>3.1.8</b> Add highest identified taxonomic rank to unclassified ranks</a></li>
+<li class="chapter" data-level="3.1.9" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#removing-contaminants"><i class="fa fa-check"></i><b>3.1.9</b> Removing contaminants</a></li>
+<li class="chapter" data-level="3.1.10" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#generate-a-phylogenetic-tree"><i class="fa fa-check"></i><b>3.1.10</b> Generate a phylogenetic tree</a></li>
+<li class="chapter" data-level="3.1.11" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#add-dna-sequences"><i class="fa fa-check"></i><b>3.1.11</b> Add DNA sequences</a></li>
+<li class="chapter" data-level="3.1.12" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#shorten-asv-name"><i class="fa fa-check"></i><b>3.1.12</b> Shorten ASV name</a></li>
+<li class="chapter" data-level="3.1.13" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#save-tables"><i class="fa fa-check"></i><b>3.1.13</b> Save tables</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#complete-code"><i class="fa fa-check"></i><b>3.2</b> Complete code</a></li>
+<li class="chapter" data-level="3.3" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#forward-reads-only"><i class="fa fa-check"></i><b>3.3</b> Forward reads only</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="rarefaction.html"><a href="rarefaction.html"><i class="fa fa-check"></i><b>4</b> Rarefaction</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="rarefaction.html"><a href="rarefaction.html#load-required-libraries"><i class="fa fa-check"></i><b>4.1</b> Load required libraries</a></li>
+<li class="chapter" data-level="4.2" data-path="rarefaction.html"><a href="rarefaction.html#getting-ready-1"><i class="fa fa-check"></i><b>4.2</b> Getting ready</a></li>
+<li class="chapter" data-level="4.3" data-path="rarefaction.html"><a href="rarefaction.html#filter-low-abundant-taxa"><i class="fa fa-check"></i><b>4.3</b> Filter low abundant taxa</a></li>
+<li class="chapter" data-level="4.4" data-path="rarefaction.html"><a href="rarefaction.html#generate-rarefaction-curve"><i class="fa fa-check"></i><b>4.4</b> Generate rarefaction curve</a></li>
+<li class="chapter" data-level="4.5" data-path="rarefaction.html"><a href="rarefaction.html#customizing-the-graph"><i class="fa fa-check"></i><b>4.5</b> Customizing the graph</a></li>
+<li class="chapter" data-level="4.6" data-path="rarefaction.html"><a href="rarefaction.html#comparing-richness-and-diversity-between-rarefied-and-un-rarefied-samples"><i class="fa fa-check"></i><b>4.6</b> Comparing richness and diversity between rarefied and un-rarefied samples</a></li>
+<li class="chapter" data-level="4.7" data-path="rarefaction.html"><a href="rarefaction.html#complete-code-1"><i class="fa fa-check"></i><b>4.7</b> Complete code</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html"><i class="fa fa-check"></i><b>5</b> Stacked taxonomy bar graphs</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#required-libraries"><i class="fa fa-check"></i><b>5.1</b> Required libraries</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#installing-libraries"><i class="fa fa-check"></i><b>5.1.1</b> Installing libraries</a></li>
+<li class="chapter" data-level="5.1.2" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#loading-the-libraries"><i class="fa fa-check"></i><b>5.1.2</b> Loading the libraries</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#required-files"><i class="fa fa-check"></i><b>5.2</b> Required files</a></li>
+<li class="chapter" data-level="5.3" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#defining-taxonomic-rank"><i class="fa fa-check"></i><b>5.3</b> Defining taxonomic rank</a></li>
+<li class="chapter" data-level="5.4" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#prepping-the-metadata-table"><i class="fa fa-check"></i><b>5.4</b> Prepping the metadata table</a></li>
+<li class="chapter" data-level="5.5" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#combine-and-melt-dataframes"><i class="fa fa-check"></i><b>5.5</b> Combine and melt dataframes</a></li>
+<li class="chapter" data-level="5.6" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#identify-most-abundant-taxa"><i class="fa fa-check"></i><b>5.6</b> Identify most abundant taxa</a></li>
+<li class="chapter" data-level="5.7" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#assign-color-and-italicize-taxa"><i class="fa fa-check"></i><b>5.7</b> Assign color and italicize taxa</a></li>
+<li class="chapter" data-level="5.8" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#saving-and-loading-color-range"><i class="fa fa-check"></i><b>5.8</b> Saving and loading color range</a></li>
+<li class="chapter" data-level="5.9" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#plotting-your-figures"><i class="fa fa-check"></i><b>5.9</b> Plotting your figures</a></li>
+<li class="chapter" data-level="5.10" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#export-tables"><i class="fa fa-check"></i><b>5.10</b> Export tables</a></li>
+<li class="chapter" data-level="5.11" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#complete-code-2"><i class="fa fa-check"></i><b>5.11</b> Complete code</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="pcoa.html"><a href="pcoa.html"><i class="fa fa-check"></i><b>6</b> PCoA</a></li>
+<li class="chapter" data-level="7" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>7</b> Final Words</a></li>
+<li class="chapter" data-level="8" data-path="remote-login.html"><a href="remote-login.html"><i class="fa fa-check"></i><b>8</b> Remote login</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="remote-login.html"><a href="remote-login.html#rstudio-server"><i class="fa fa-check"></i><b>8.1</b> RStudio Server</a></li>
+<li class="chapter" data-level="8.2" data-path="remote-login.html"><a href="remote-login.html#terminal"><i class="fa fa-check"></i><b>8.2</b> Terminal</a></li>
+<li class="chapter" data-level="8.3" data-path="remote-login.html"><a href="remote-login.html#usefull-applications-and-tools"><i class="fa fa-check"></i><b>8.3</b> Usefull applications and tools</a></li>
+<li class="chapter" data-level="8.4" data-path="remote-login.html"><a href="remote-login.html#r-markdown"><i class="fa fa-check"></i><b>8.4</b> R Markdown</a></li>
+<li class="chapter" data-level="8.5" data-path="remote-login.html"><a href="remote-login.html#including-plots"><i class="fa fa-check"></i><b>8.5</b> Including Plots</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Example workflow of amplicon sequence data analysis</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="rarefaction" class="section level1 hasAnchor" number="4">
+<h1><span class="header-section-number">Chapter 4</span> Rarefaction<a href="rarefaction.html#rarefaction" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<!-- Chunk to allow horizontal scroll in chunks rather than wrap text  -->
+<style type="text/css">
+pre, code {white-space:pre !important; overflow-x:auto}
+</style>
+<p>To control for uneven sequencing effort in amplicon sequence analyses a common approach consist of normalizing the sampling depth by the random subsampling of sequences from each sample down to the lowest but reasonable sample’s depth (it is recommended to not go below 1000 sequences). This normalization method is refereed to as rarefying. While this approach is the subject of considerable debate and statistical criticism (see the 2014 PLOS Computational Biology paper, “Waste not, want not: why rarefying microbiome data is inadmissible” by McMurdie and Holmes) and alternative methods have been developed (DESeq2, cumulative sum scaling (CSS), and more…) rarefaction is still widely used and the most common normalizing method used in the literature.</p>
+<div id="load-required-libraries" class="section level2 hasAnchor" number="4.1">
+<h2><span class="header-section-number">4.1</span> Load required libraries<a href="rarefaction.html#load-required-libraries" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="rarefaction.html#cb1-1" tabindex="-1"></a><span class="fu">library</span>(vegan)</span>
+<span id="cb1-2"><a href="rarefaction.html#cb1-2" tabindex="-1"></a><span class="fu">library</span>(phyloseq)</span>
+<span id="cb1-3"><a href="rarefaction.html#cb1-3" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="rarefaction.html#cb1-4" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-5"><a href="rarefaction.html#cb1-5" tabindex="-1"></a><span class="fu">library</span>(ggpubr)</span>
+<span id="cb1-6"><a href="rarefaction.html#cb1-6" tabindex="-1"></a><span class="fu">library</span>(glue)</span></code></pre></div>
+</div>
+<div id="getting-ready-1" class="section level2 hasAnchor" number="4.2">
+<h2><span class="header-section-number">4.2</span> Getting ready<a href="rarefaction.html#getting-ready-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Load the data previously generated by the DADA2 workflow and combine into phyloseq object</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="rarefaction.html#cb2-1" tabindex="-1"></a><span class="co"># Define your path </span></span>
+<span id="cb2-2"><a href="rarefaction.html#cb2-2" tabindex="-1"></a>path <span class="ot">=</span> <span class="st">&quot;~/project/domain/int_data&quot;</span></span>
+<span id="cb2-3"><a href="rarefaction.html#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="rarefaction.html#cb2-4" tabindex="-1"></a>asv <span class="ot">=</span> <span class="fu">read.table</span>(<span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/raw_asv.csv&quot;</span>), <span class="at">sep=</span><span class="st">&quot;,&quot;</span>, <span class="at">row.names=</span><span class="dv">1</span>, <span class="at">header=</span><span class="cn">TRUE</span>, <span class="at">check.names=</span><span class="cn">FALSE</span>) </span>
+<span id="cb2-5"><a href="rarefaction.html#cb2-5" tabindex="-1"></a>taxa <span class="ot">=</span> <span class="fu">read.table</span>(<span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/raw_taxa.csv&quot;</span>), <span class="at">sep=</span><span class="st">&quot;,&quot;</span>, <span class="at">row.names=</span><span class="dv">1</span>, <span class="at">header=</span><span class="cn">TRUE</span>) </span>
+<span id="cb2-6"><a href="rarefaction.html#cb2-6" tabindex="-1"></a>meta <span class="ot">=</span> <span class="fu">read.table</span>(<span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/raw_meta.csv&quot;</span>), <span class="at">sep=</span><span class="st">&quot;,&quot;</span>, <span class="at">row.names=</span><span class="dv">1</span>, <span class="at">header=</span><span class="cn">TRUE</span>) </span>
+<span id="cb2-7"><a href="rarefaction.html#cb2-7" tabindex="-1"></a>tree <span class="ot">=</span> ape<span class="sc">::</span><span class="fu">read.tree</span>( <span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/raw_tree.tree&quot;</span>))</span>
+<span id="cb2-8"><a href="rarefaction.html#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="rarefaction.html#cb2-9" tabindex="-1"></a><span class="co"># Merge into phyloseq object</span></span>
+<span id="cb2-10"><a href="rarefaction.html#cb2-10" tabindex="-1"></a>ps<span class="ot">=</span><span class="fu">phyloseq</span>(<span class="fu">otu_table</span>(asv, <span class="at">taxa_are_rows=</span><span class="cn">TRUE</span>), <span class="fu">tax_table</span>(<span class="fu">as.matrix</span>(taxa)), <span class="fu">sample_data</span>(meta), <span class="fu">phy_tree</span>(tree))</span></code></pre></div>
+</div>
+<div id="filter-low-abundant-taxa" class="section level2 hasAnchor" number="4.3">
+<h2><span class="header-section-number">4.3</span> Filter low abundant taxa<a href="rarefaction.html#filter-low-abundant-taxa" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>One of the reasons to filter in this way is to avoid spending much time analyzing taxa that were only rarely seen.
+This also turns out to be a useful filter of noise (taxa that are actually just artifacts of the data collection process)
+A step that should probably be considered essential for datasets constructed via heuristic OTU-clustering methods, which are notoriously prone to generating spurious taxa. Here we are removing taxa with a relative abundance less than 0.005% as recommended by Bokulich et al., 2013</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="rarefaction.html#cb3-1" tabindex="-1"></a><span class="co"># Define threshold for low abundant taxa</span></span>
+<span id="cb3-2"><a href="rarefaction.html#cb3-2" tabindex="-1"></a>minTotRelAbun <span class="ot">=</span> <span class="fl">5e-5</span></span>
+<span id="cb3-3"><a href="rarefaction.html#cb3-3" tabindex="-1"></a><span class="co"># Get total sum for each taxa</span></span>
+<span id="cb3-4"><a href="rarefaction.html#cb3-4" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">taxa_sums</span>(ps)</span>
+<span id="cb3-5"><a href="rarefaction.html#cb3-5" tabindex="-1"></a><span class="co"># Identify taxa with a total sum greater than the defined threshold</span></span>
+<span id="cb3-6"><a href="rarefaction.html#cb3-6" tabindex="-1"></a>keepTaxa <span class="ot">=</span> (x <span class="sc">/</span> <span class="fu">sum</span>(x)) <span class="sc">&gt;</span> minTotRelAbun</span>
+<span id="cb3-7"><a href="rarefaction.html#cb3-7" tabindex="-1"></a><span class="co"># Filter out from the phyloseq object any taxa not identified in the keepTaxa object</span></span>
+<span id="cb3-8"><a href="rarefaction.html#cb3-8" tabindex="-1"></a>prunedSet <span class="ot">=</span> <span class="fu">prune_taxa</span>(keepTaxa, ps)</span>
+<span id="cb3-9"><a href="rarefaction.html#cb3-9" tabindex="-1"></a><span class="co"># View how many taxa were removed by sample </span></span>
+<span id="cb3-10"><a href="rarefaction.html#cb3-10" tabindex="-1"></a>loss_taxa<span class="ot">=</span><span class="fu">data.frame</span>(<span class="fu">sample_sums</span>(prunedSet), <span class="fu">sample_sums</span>(ps), (<span class="fu">sample_sums</span>(prunedSet)<span class="sc">-</span><span class="fu">sample_sums</span>(ps)))</span></code></pre></div>
+</div>
+<div id="generate-rarefaction-curve" class="section level2 hasAnchor" number="4.4">
+<h2><span class="header-section-number">4.4</span> Generate rarefaction curve<a href="rarefaction.html#generate-rarefaction-curve" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Generating rarefation curves is the most common method used to visualize the ASVs richness as a function of sample size. (number of sequences). Analyzing such graphics also helps identifying the optimal rarefying threshold.</p>
+<p>To generate the rarefaction curves we are using the custom ggrare() function which runs much faster and also ultimately allows the user to modify certain parameter of the function if necessary.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="rarefaction.html#cb4-1" tabindex="-1"></a>ggrare <span class="ot">&lt;-</span> <span class="cf">function</span>(physeq_object, <span class="at">step =</span> <span class="dv">10</span>, <span class="at">label =</span> <span class="cn">NULL</span>, <span class="at">color =</span> <span class="cn">NULL</span>, <span class="at">plot =</span> <span class="cn">TRUE</span>, <span class="at">parallel =</span> <span class="cn">FALSE</span>, <span class="at">se =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb4-2"><a href="rarefaction.html#cb4-2" tabindex="-1"></a>  </span>
+<span id="cb4-3"><a href="rarefaction.html#cb4-3" tabindex="-1"></a>  x <span class="ot">&lt;-</span> methods<span class="sc">::</span><span class="fu">as</span>(phyloseq<span class="sc">::</span><span class="fu">otu_table</span>(physeq_object), <span class="st">&quot;matrix&quot;</span>)</span>
+<span id="cb4-4"><a href="rarefaction.html#cb4-4" tabindex="-1"></a>  <span class="cf">if</span> (phyloseq<span class="sc">::</span><span class="fu">taxa_are_rows</span>(physeq_object)) { x <span class="ot">&lt;-</span> <span class="fu">t</span>(x) }</span>
+<span id="cb4-5"><a href="rarefaction.html#cb4-5" tabindex="-1"></a>  </span>
+<span id="cb4-6"><a href="rarefaction.html#cb4-6" tabindex="-1"></a>  <span class="do">## This script is adapted from vegan `rarecurve` function</span></span>
+<span id="cb4-7"><a href="rarefaction.html#cb4-7" tabindex="-1"></a>  tot <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(x)</span>
+<span id="cb4-8"><a href="rarefaction.html#cb4-8" tabindex="-1"></a>  S <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(x <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb4-9"><a href="rarefaction.html#cb4-9" tabindex="-1"></a>  nr <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
+<span id="cb4-10"><a href="rarefaction.html#cb4-10" tabindex="-1"></a>  </span>
+<span id="cb4-11"><a href="rarefaction.html#cb4-11" tabindex="-1"></a>  rarefun <span class="ot">&lt;-</span> <span class="cf">function</span>(i) {</span>
+<span id="cb4-12"><a href="rarefaction.html#cb4-12" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="fu">paste</span>(<span class="st">&quot;rarefying sample&quot;</span>, <span class="fu">rownames</span>(x)[i]), <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-13"><a href="rarefaction.html#cb4-13" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1</span>, tot[i], <span class="at">by =</span> step)</span>
+<span id="cb4-14"><a href="rarefaction.html#cb4-14" tabindex="-1"></a>    <span class="cf">if</span> (n[<span class="fu">length</span>(n)] <span class="sc">!=</span> tot[i]) {</span>
+<span id="cb4-15"><a href="rarefaction.html#cb4-15" tabindex="-1"></a>      n <span class="ot">&lt;-</span> <span class="fu">c</span>(n, tot[i])</span>
+<span id="cb4-16"><a href="rarefaction.html#cb4-16" tabindex="-1"></a>    }</span>
+<span id="cb4-17"><a href="rarefaction.html#cb4-17" tabindex="-1"></a>    y <span class="ot">&lt;-</span> vegan<span class="sc">::</span><span class="fu">rarefy</span>(x[i, ,<span class="at">drop =</span> <span class="cn">FALSE</span>], n, <span class="at">se =</span> se)</span>
+<span id="cb4-18"><a href="rarefaction.html#cb4-18" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">nrow</span>(y) <span class="sc">!=</span> <span class="dv">1</span>) {</span>
+<span id="cb4-19"><a href="rarefaction.html#cb4-19" tabindex="-1"></a>      <span class="fu">rownames</span>(y) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;.S&quot;</span>, <span class="st">&quot;.se&quot;</span>)</span>
+<span id="cb4-20"><a href="rarefaction.html#cb4-20" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">data.frame</span>(<span class="fu">t</span>(y), <span class="at">Size =</span> n, <span class="at">Sample =</span> <span class="fu">rownames</span>(x)[i]))</span>
+<span id="cb4-21"><a href="rarefaction.html#cb4-21" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb4-22"><a href="rarefaction.html#cb4-22" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">data.frame</span>(<span class="at">.S =</span> y[<span class="dv">1</span>, ], <span class="at">Size =</span> n, <span class="at">Sample =</span> <span class="fu">rownames</span>(x)[i]))</span>
+<span id="cb4-23"><a href="rarefaction.html#cb4-23" tabindex="-1"></a>    }</span>
+<span id="cb4-24"><a href="rarefaction.html#cb4-24" tabindex="-1"></a>  }</span>
+<span id="cb4-25"><a href="rarefaction.html#cb4-25" tabindex="-1"></a>  <span class="cf">if</span> (parallel) {</span>
+<span id="cb4-26"><a href="rarefaction.html#cb4-26" tabindex="-1"></a>    out <span class="ot">&lt;-</span> parallel<span class="sc">::</span><span class="fu">mclapply</span>(<span class="fu">seq_len</span>(nr), rarefun, <span class="at">mc.preschedule =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-27"><a href="rarefaction.html#cb4-27" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb4-28"><a href="rarefaction.html#cb4-28" tabindex="-1"></a>    out <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">seq_len</span>(nr), rarefun)</span>
+<span id="cb4-29"><a href="rarefaction.html#cb4-29" tabindex="-1"></a>  }</span>
+<span id="cb4-30"><a href="rarefaction.html#cb4-30" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, out)</span>
+<span id="cb4-31"><a href="rarefaction.html#cb4-31" tabindex="-1"></a>  </span>
+<span id="cb4-32"><a href="rarefaction.html#cb4-32" tabindex="-1"></a>  <span class="co"># Get sample data</span></span>
+<span id="cb4-33"><a href="rarefaction.html#cb4-33" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(phyloseq<span class="sc">::</span><span class="fu">sample_data</span>(physeq_object, <span class="cn">FALSE</span>))) {</span>
+<span id="cb4-34"><a href="rarefaction.html#cb4-34" tabindex="-1"></a>    sdf <span class="ot">&lt;-</span> methods<span class="sc">::</span><span class="fu">as</span>(phyloseq<span class="sc">::</span><span class="fu">sample_data</span>(physeq_object), <span class="st">&quot;data.frame&quot;</span>)</span>
+<span id="cb4-35"><a href="rarefaction.html#cb4-35" tabindex="-1"></a>    sdf<span class="sc">$</span>Sample <span class="ot">&lt;-</span> <span class="fu">rownames</span>(sdf)</span>
+<span id="cb4-36"><a href="rarefaction.html#cb4-36" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">merge</span>(df, sdf, <span class="at">by =</span> <span class="st">&quot;Sample&quot;</span>)</span>
+<span id="cb4-37"><a href="rarefaction.html#cb4-37" tabindex="-1"></a>    labels <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> tot, <span class="at">y =</span> S, <span class="at">Sample =</span> <span class="fu">rownames</span>(x))</span>
+<span id="cb4-38"><a href="rarefaction.html#cb4-38" tabindex="-1"></a>    labels <span class="ot">&lt;-</span> <span class="fu">merge</span>(labels, sdf, <span class="at">by =</span> <span class="st">&quot;Sample&quot;</span>)</span>
+<span id="cb4-39"><a href="rarefaction.html#cb4-39" tabindex="-1"></a>  }</span>
+<span id="cb4-40"><a href="rarefaction.html#cb4-40" tabindex="-1"></a>  </span>
+<span id="cb4-41"><a href="rarefaction.html#cb4-41" tabindex="-1"></a>  <span class="co"># Add, any custom-supplied plot-mapped variables</span></span>
+<span id="cb4-42"><a href="rarefaction.html#cb4-42" tabindex="-1"></a>  <span class="cf">if</span> ( <span class="fu">length</span>(color) <span class="sc">&gt;</span> <span class="dv">1</span> ) {</span>
+<span id="cb4-43"><a href="rarefaction.html#cb4-43" tabindex="-1"></a>    data<span class="sc">$</span>color <span class="ot">&lt;-</span> color</span>
+<span id="cb4-44"><a href="rarefaction.html#cb4-44" tabindex="-1"></a>    <span class="fu">names</span>(data)[<span class="fu">names</span>(data) <span class="sc">==</span> <span class="st">&quot;color&quot;</span>] <span class="ot">&lt;-</span> <span class="fu">deparse</span>(<span class="fu">substitute</span>(color))</span>
+<span id="cb4-45"><a href="rarefaction.html#cb4-45" tabindex="-1"></a>    color <span class="ot">&lt;-</span> <span class="fu">deparse</span>(<span class="fu">substitute</span>(color))</span>
+<span id="cb4-46"><a href="rarefaction.html#cb4-46" tabindex="-1"></a>  }</span>
+<span id="cb4-47"><a href="rarefaction.html#cb4-47" tabindex="-1"></a>  </span>
+<span id="cb4-48"><a href="rarefaction.html#cb4-48" tabindex="-1"></a>  <span class="cf">if</span> ( <span class="fu">length</span>(label) <span class="sc">&gt;</span> <span class="dv">1</span> ) {</span>
+<span id="cb4-49"><a href="rarefaction.html#cb4-49" tabindex="-1"></a>    labels<span class="sc">$</span>label <span class="ot">&lt;-</span> label</span>
+<span id="cb4-50"><a href="rarefaction.html#cb4-50" tabindex="-1"></a>    <span class="fu">names</span>(labels)[<span class="fu">names</span>(labels) <span class="sc">==</span> <span class="st">&quot;label&quot;</span>] <span class="ot">&lt;-</span> <span class="fu">deparse</span>(<span class="fu">substitute</span>(label))</span>
+<span id="cb4-51"><a href="rarefaction.html#cb4-51" tabindex="-1"></a>    label <span class="ot">&lt;-</span> <span class="fu">deparse</span>(<span class="fu">substitute</span>(label))</span>
+<span id="cb4-52"><a href="rarefaction.html#cb4-52" tabindex="-1"></a>  }</span>
+<span id="cb4-53"><a href="rarefaction.html#cb4-53" tabindex="-1"></a>  </span>
+<span id="cb4-54"><a href="rarefaction.html#cb4-54" tabindex="-1"></a>  p <span class="ot">&lt;-</span> ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(<span class="at">data =</span> data,</span>
+<span id="cb4-55"><a href="rarefaction.html#cb4-55" tabindex="-1"></a>                       ggplot2<span class="sc">::</span><span class="fu">aes_string</span>(<span class="at">x =</span> <span class="st">&quot;Size&quot;</span>,</span>
+<span id="cb4-56"><a href="rarefaction.html#cb4-56" tabindex="-1"></a>                                           <span class="at">y =</span> <span class="st">&quot;.S&quot;</span>,</span>
+<span id="cb4-57"><a href="rarefaction.html#cb4-57" tabindex="-1"></a>                                           <span class="at">group =</span> <span class="st">&quot;Sample&quot;</span>,</span>
+<span id="cb4-58"><a href="rarefaction.html#cb4-58" tabindex="-1"></a>                                           <span class="at">color =</span> color))</span>
+<span id="cb4-59"><a href="rarefaction.html#cb4-59" tabindex="-1"></a>  </span>
+<span id="cb4-60"><a href="rarefaction.html#cb4-60" tabindex="-1"></a>  p <span class="ot">&lt;-</span> p <span class="sc">+</span> ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Number of sequence reads&quot;</span>, <span class="at">y =</span> <span class="st">&quot;ASV richness&quot;</span>)</span>
+<span id="cb4-61"><a href="rarefaction.html#cb4-61" tabindex="-1"></a>  </span>
+<span id="cb4-62"><a href="rarefaction.html#cb4-62" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(label)) {</span>
+<span id="cb4-63"><a href="rarefaction.html#cb4-63" tabindex="-1"></a>    p <span class="ot">&lt;-</span> p <span class="sc">+</span> ggplot2<span class="sc">::</span><span class="fu">geom_text</span>(<span class="at">data =</span> labels,</span>
+<span id="cb4-64"><a href="rarefaction.html#cb4-64" tabindex="-1"></a>                                ggplot2<span class="sc">::</span><span class="fu">aes_string</span>(<span class="at">x =</span> <span class="st">&quot;x&quot;</span>,</span>
+<span id="cb4-65"><a href="rarefaction.html#cb4-65" tabindex="-1"></a>                                                    <span class="at">y =</span> <span class="st">&quot;y&quot;</span>,</span>
+<span id="cb4-66"><a href="rarefaction.html#cb4-66" tabindex="-1"></a>                                                    <span class="at">label =</span> label,</span>
+<span id="cb4-67"><a href="rarefaction.html#cb4-67" tabindex="-1"></a>                                                    <span class="at">color =</span> color),</span>
+<span id="cb4-68"><a href="rarefaction.html#cb4-68" tabindex="-1"></a>                                <span class="at">size =</span> <span class="dv">4</span>, <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">show.legend=</span><span class="cn">FALSE</span>)</span>
+<span id="cb4-69"><a href="rarefaction.html#cb4-69" tabindex="-1"></a>  }</span>
+<span id="cb4-70"><a href="rarefaction.html#cb4-70" tabindex="-1"></a>  </span>
+<span id="cb4-71"><a href="rarefaction.html#cb4-71" tabindex="-1"></a>  p <span class="ot">&lt;-</span> p <span class="sc">+</span> ggplot2<span class="sc">::</span><span class="fu">geom_line</span>()</span>
+<span id="cb4-72"><a href="rarefaction.html#cb4-72" tabindex="-1"></a>  <span class="cf">if</span> (se) { <span class="do">## add standard error if available</span></span>
+<span id="cb4-73"><a href="rarefaction.html#cb4-73" tabindex="-1"></a>    p <span class="ot">&lt;-</span> p <span class="sc">+</span></span>
+<span id="cb4-74"><a href="rarefaction.html#cb4-74" tabindex="-1"></a>      ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(ggplot2<span class="sc">::</span><span class="fu">aes_string</span>(<span class="at">ymin =</span> <span class="st">&quot;.S - .se&quot;</span>,</span>
+<span id="cb4-75"><a href="rarefaction.html#cb4-75" tabindex="-1"></a>                                               <span class="at">ymax =</span> <span class="st">&quot;.S + .se&quot;</span>,</span>
+<span id="cb4-76"><a href="rarefaction.html#cb4-76" tabindex="-1"></a>                                               <span class="at">color =</span> <span class="cn">NULL</span>,</span>
+<span id="cb4-77"><a href="rarefaction.html#cb4-77" tabindex="-1"></a>                                               <span class="at">fill =</span> color),</span>
+<span id="cb4-78"><a href="rarefaction.html#cb4-78" tabindex="-1"></a>                           <span class="at">alpha =</span> <span class="fl">0.2</span>)</span>
+<span id="cb4-79"><a href="rarefaction.html#cb4-79" tabindex="-1"></a>  }</span>
+<span id="cb4-80"><a href="rarefaction.html#cb4-80" tabindex="-1"></a>  <span class="cf">if</span> (plot) {</span>
+<span id="cb4-81"><a href="rarefaction.html#cb4-81" tabindex="-1"></a>    <span class="fu">plot</span>(p)</span>
+<span id="cb4-82"><a href="rarefaction.html#cb4-82" tabindex="-1"></a>  }</span>
+<span id="cb4-83"><a href="rarefaction.html#cb4-83" tabindex="-1"></a>  <span class="fu">invisible</span>(p)</span>
+<span id="cb4-84"><a href="rarefaction.html#cb4-84" tabindex="-1"></a>}</span></code></pre></div>
+<p>Once the function is defined we can use it with the phyloseq object. If you wish to color the different curves based on a certain sample characteristics from you metadata table simply swap <code>characteristic</code> to the column name of interest.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="rarefaction.html#cb5-1" tabindex="-1"></a>p <span class="ot">=</span> <span class="fu">ggrare</span>(prunedSet, <span class="at">step =</span> <span class="dv">20</span>, <span class="at">color =</span> <span class="st">&quot;characteristic&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Sample&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) </span></code></pre></div>
+<p>We can now either :</p>
+<ol style="list-style-type: decimal">
+<li>rarefy to the lowest sequence number greater than 1000;</li>
+<li>or use the information from the graph to determine an optimal threshold.</li>
+</ol>
+<p>For option 1</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="rarefaction.html#cb6-1" tabindex="-1"></a><span class="co"># Get dataframe of sequences per sample</span></span>
+<span id="cb6-2"><a href="rarefaction.html#cb6-2" tabindex="-1"></a>sample_size <span class="ot">=</span> <span class="fu">as.data.frame</span>(<span class="fu">sample_sums</span>(prunedSet))</span>
+<span id="cb6-3"><a href="rarefaction.html#cb6-3" tabindex="-1"></a><span class="co"># Filter for the lowest number above 1000 </span></span>
+<span id="cb6-4"><a href="rarefaction.html#cb6-4" tabindex="-1"></a>rare_value <span class="ot">=</span> sample_size[<span class="fu">which.max</span>((sample_size[,<span class="dv">1</span>] <span class="sc">&gt;=</span> <span class="dv">1000</span>)<span class="sc">/</span>sample_size[,<span class="dv">1</span>]),]</span>
+<span id="cb6-5"><a href="rarefaction.html#cb6-5" tabindex="-1"></a><span class="co"># Rarefy to value identified as rare_value</span></span>
+<span id="cb6-6"><a href="rarefaction.html#cb6-6" tabindex="-1"></a>ps_rare<span class="ot">=</span><span class="fu">rarefy_even_depth</span>(prunedSet, rare_value, <span class="at">rngseed =</span> <span class="dv">112</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>, <span class="at">trimOTUs =</span> <span class="cn">TRUE</span>, <span class="at">verbose =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb6-7"><a href="rarefaction.html#cb6-7" tabindex="-1"></a><span class="co"># Confirm rarefaction as a sanity check </span></span>
+<span id="cb6-8"><a href="rarefaction.html#cb6-8" tabindex="-1"></a><span class="fu">sample_sums</span>(ps_rare)</span></code></pre></div>
+<p>For option 2</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="rarefaction.html#cb7-1" tabindex="-1"></a><span class="co"># Define value for rarefying</span></span>
+<span id="cb7-2"><a href="rarefaction.html#cb7-2" tabindex="-1"></a>rare_value<span class="ot">=</span><span class="dv">1019</span> </span>
+<span id="cb7-3"><a href="rarefaction.html#cb7-3" tabindex="-1"></a><span class="co"># Rarefy to value identified as rare_value</span></span>
+<span id="cb7-4"><a href="rarefaction.html#cb7-4" tabindex="-1"></a>ps_rare<span class="ot">=</span><span class="fu">rarefy_even_depth</span>(prunedSet, rare_value, <span class="at">rngseed =</span> <span class="dv">112</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>, <span class="at">trimOTUs =</span> <span class="cn">TRUE</span>, <span class="at">verbose =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb7-5"><a href="rarefaction.html#cb7-5" tabindex="-1"></a><span class="co"># Confirm rarefaction as a sanity check </span></span>
+<span id="cb7-6"><a href="rarefaction.html#cb7-6" tabindex="-1"></a><span class="fu">sample_sums</span>(ps_rare)</span></code></pre></div>
+</div>
+<div id="customizing-the-graph" class="section level2 hasAnchor" number="4.5">
+<h2><span class="header-section-number">4.5</span> Customizing the graph<a href="rarefaction.html#customizing-the-graph" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We are adding a red line which corresponds to the define rarefying threshold. Again, to color your curves based on a certain sample characteristics from you metadata table simply swap <code>characteristic</code> to the column name of interest. Specific colors can also be defined with function <code>scale_color_manual</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="rarefaction.html#cb8-1" tabindex="-1"></a>p2 <span class="ot">=</span> p <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept=</span><span class="dv">2530</span>, <span class="at">color=</span> <span class="st">&quot;red&quot;</span>, <span class="at">linetype=</span><span class="st">&#39;dashed&#39;</span>) <span class="sc">+</span> <span class="co"># Add vertical red line and modifying axis limits</span></span>
+<span id="cb8-2"><a href="rarefaction.html#cb8-2" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">12</span>)) <span class="sc">+</span> </span>
+<span id="cb8-3"><a href="rarefaction.html#cb8-3" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb8-4"><a href="rarefaction.html#cb8-4" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color=</span><span class="st">&quot;characteristic&quot;</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="rarefaction.html#cb8-5" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#72B3DA&quot;</span>, <span class="st">&quot;royalblue4&quot;</span>, <span class="st">&quot;#000000&quot;</span>,<span class="st">&quot;#A0522D&quot;</span>))</span></code></pre></div>
+</div>
+<div id="comparing-richness-and-diversity-between-rarefied-and-un-rarefied-samples" class="section level2 hasAnchor" number="4.6">
+<h2><span class="header-section-number">4.6</span> Comparing richness and diversity between rarefied and un-rarefied samples<a href="rarefaction.html#comparing-richness-and-diversity-between-rarefied-and-un-rarefied-samples" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="rarefaction.html#cb9-1" tabindex="-1"></a><span class="co"># Extract ASV count matrix from both phyloseq object </span></span>
+<span id="cb9-2"><a href="rarefaction.html#cb9-2" tabindex="-1"></a>asv_r<span class="ot">=</span><span class="fu">data.frame</span>(<span class="fu">otu_table</span>(ps_rare))</span>
+<span id="cb9-3"><a href="rarefaction.html#cb9-3" tabindex="-1"></a>asv<span class="ot">=</span><span class="fu">data.frame</span>(<span class="fu">otu_table</span>(ps))</span>
+<span id="cb9-4"><a href="rarefaction.html#cb9-4" tabindex="-1"></a><span class="co"># Remove samples deleted after rarefaction</span></span>
+<span id="cb9-5"><a href="rarefaction.html#cb9-5" tabindex="-1"></a>asv1<span class="ot">=</span><span class="fu">subset</span>(asv, <span class="at">select=</span><span class="fu">c</span>(<span class="fu">colnames</span>(asv_r)))</span>
+<span id="cb9-6"><a href="rarefaction.html#cb9-6" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="rarefaction.html#cb9-7" tabindex="-1"></a><span class="co"># Calculate Shannon diversity index </span></span>
+<span id="cb9-8"><a href="rarefaction.html#cb9-8" tabindex="-1"></a>dShannon<span class="ot">=</span><span class="fu">ChaoShannon</span>(asv1)</span>
+<span id="cb9-9"><a href="rarefaction.html#cb9-9" tabindex="-1"></a>dShannon<span class="sc">$</span>rar<span class="ot">=</span><span class="fu">diversity</span>(<span class="fu">t</span>(asv_r))</span>
+<span id="cb9-10"><a href="rarefaction.html#cb9-10" tabindex="-1"></a><span class="co"># Calculate species richness </span></span>
+<span id="cb9-11"><a href="rarefaction.html#cb9-11" tabindex="-1"></a>Sr<span class="ot">=</span><span class="fu">ChaoRichness</span>(asv1)</span>
+<span id="cb9-12"><a href="rarefaction.html#cb9-12" tabindex="-1"></a>Sr<span class="sc">$</span>rar<span class="ot">=</span><span class="fu">ChaoRichness</span>(asv_r)<span class="sc">$</span>Observed</span>
+<span id="cb9-13"><a href="rarefaction.html#cb9-13" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="rarefaction.html#cb9-14" tabindex="-1"></a><span class="co"># ------------------ Plotting the results  ------------------ </span></span>
+<span id="cb9-15"><a href="rarefaction.html#cb9-15" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="rarefaction.html#cb9-16" tabindex="-1"></a>gshannon<span class="ot">=</span><span class="fu">ggplot</span>(dShannon,<span class="fu">aes</span>(<span class="at">x=</span>Estimator, <span class="at">y=</span>rar))<span class="sc">+</span></span>
+<span id="cb9-17"><a href="rarefaction.html#cb9-17" tabindex="-1"></a>  <span class="fu">stat_cor</span>(<span class="at">method =</span> <span class="st">&quot;spearman&quot;</span>, <span class="at">digits =</span> <span class="dv">4</span>, <span class="fu">aes</span>(<span class="at">label=</span><span class="fu">paste</span>(rr.label,..p.label..,<span class="at">sep=</span><span class="st">&#39;~`,`~&#39;</span>))) <span class="sc">+</span></span>
+<span id="cb9-18"><a href="rarefaction.html#cb9-18" tabindex="-1"></a>  <span class="fu">geom_point</span>()<span class="sc">+</span></span>
+<span id="cb9-19"><a href="rarefaction.html#cb9-19" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span><span class="fu">xlab</span>(<span class="st">&quot;Non-rarefied Shannon diversity&quot;</span>)<span class="sc">+</span><span class="fu">ylab</span>(<span class="st">&quot;Rarefied Shannon diversity&quot;</span>) <span class="sc">+</span></span>
+<span id="cb9-20"><a href="rarefaction.html#cb9-20" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> F, <span class="at">color =</span> <span class="st">&quot;#D6604D&quot;</span>) <span class="sc">+</span></span>
+<span id="cb9-21"><a href="rarefaction.html#cb9-21" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span> , <span class="at">lty=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb9-22"><a href="rarefaction.html#cb9-22" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>,<span class="dv">7</span>) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="dv">0</span>,<span class="dv">7</span>) <span class="sc">+</span></span>
+<span id="cb9-23"><a href="rarefaction.html#cb9-23" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">12</span>))</span>
+<span id="cb9-24"><a href="rarefaction.html#cb9-24" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="rarefaction.html#cb9-25" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="rarefaction.html#cb9-26" tabindex="-1"></a>grichness <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(Sr,<span class="fu">aes</span>(<span class="at">x=</span>Estimator, <span class="at">y=</span>rar))<span class="sc">+</span></span>
+<span id="cb9-27"><a href="rarefaction.html#cb9-27" tabindex="-1"></a>  <span class="fu">stat_cor</span>(<span class="at">method =</span> <span class="st">&quot;spearman&quot;</span>, <span class="at">digits =</span> <span class="dv">4</span>, <span class="fu">aes</span>(<span class="at">label=</span><span class="fu">paste</span>(rr.label,..p.label..,<span class="at">sep=</span><span class="st">&#39;~`,`~&#39;</span>)), <span class="at">label.y=</span><span class="dv">4680</span>) <span class="sc">+</span></span>
+<span id="cb9-28"><a href="rarefaction.html#cb9-28" tabindex="-1"></a>  <span class="fu">geom_point</span>()<span class="sc">+</span></span>
+<span id="cb9-29"><a href="rarefaction.html#cb9-29" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span><span class="fu">xlab</span>(<span class="st">&quot;Non-rarefied ASV richness&quot;</span>)<span class="sc">+</span><span class="fu">ylab</span>(<span class="st">&quot;Rarefied ASV richness&quot;</span>) <span class="sc">+</span></span>
+<span id="cb9-30"><a href="rarefaction.html#cb9-30" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> F, <span class="at">color =</span> <span class="st">&quot;#D6604D&quot;</span>) <span class="sc">+</span></span>
+<span id="cb9-31"><a href="rarefaction.html#cb9-31" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span> , <span class="at">lty=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb9-32"><a href="rarefaction.html#cb9-32" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>,<span class="dv">5000</span>) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="dv">0</span>,<span class="dv">5000</span>) <span class="sc">+</span> </span>
+<span id="cb9-33"><a href="rarefaction.html#cb9-33" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">12</span>))</span>
+<span id="cb9-34"><a href="rarefaction.html#cb9-34" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="rarefaction.html#cb9-35" tabindex="-1"></a></span>
+<span id="cb9-36"><a href="rarefaction.html#cb9-36" tabindex="-1"></a>combined_plots<span class="ot">=</span><span class="fu">ggarrange</span>(p2, <span class="fu">ggarrange</span>(gshannon, grichness, <span class="at">ncol=</span><span class="dv">2</span>, <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;b&quot;</span>,<span class="st">&quot;c&quot;</span>)), <span class="at">nrow=</span><span class="dv">2</span>, <span class="at">labels=</span><span class="st">&quot;a&quot;</span>)</span>
+<span id="cb9-37"><a href="rarefaction.html#cb9-37" tabindex="-1"></a></span>
+<span id="cb9-38"><a href="rarefaction.html#cb9-38" tabindex="-1"></a></span>
+<span id="cb9-39"><a href="rarefaction.html#cb9-39" tabindex="-1"></a><span class="co"># ------------------ Save plot  ------------------ </span></span>
+<span id="cb9-40"><a href="rarefaction.html#cb9-40" tabindex="-1"></a></span>
+<span id="cb9-41"><a href="rarefaction.html#cb9-41" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">&quot;rarefaction_curve.pdf&quot;</span>, <span class="at">plot=</span>combined_plots, <span class="at">width=</span><span class="fl">16.5</span>, <span class="at">height =</span> <span class="dv">18</span>,<span class="at">units=</span><span class="st">&quot;cm&quot;</span>, <span class="at">path=</span><span class="st">&quot;/image/&quot;</span>)</span>
+<span id="cb9-42"><a href="rarefaction.html#cb9-42" tabindex="-1"></a></span>
+<span id="cb9-43"><a href="rarefaction.html#cb9-43" tabindex="-1"></a></span>
+<span id="cb9-44"><a href="rarefaction.html#cb9-44" tabindex="-1"></a><span class="co"># ------------------ Save rarefied table  ------------------ </span></span>
+<span id="cb9-45"><a href="rarefaction.html#cb9-45" tabindex="-1"></a></span>
+<span id="cb9-46"><a href="rarefaction.html#cb9-46" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="fu">as.data.frame</span>(<span class="fu">as</span>(<span class="fu">tax_table</span>(ps_rare), <span class="st">&quot;matrix&quot;</span>)), <span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/rarefied_taxa.csv&quot;</span>))</span>
+<span id="cb9-47"><a href="rarefaction.html#cb9-47" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="fu">as.data.frame</span>(<span class="fu">as</span>(<span class="fu">otu_table</span>(ps_rare), <span class="st">&quot;matrix&quot;</span>)),<span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/rarefied_asv.csv&quot;</span>))</span>
+<span id="cb9-48"><a href="rarefaction.html#cb9-48" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="fu">as.data.frame</span>(<span class="fu">as</span>(<span class="fu">sample_data</span>(ps_rare), <span class="st">&quot;matrix&quot;</span>)), <span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/rarefied_meta.csv&quot;</span>))</span>
+<span id="cb9-49"><a href="rarefaction.html#cb9-49" tabindex="-1"></a>tree.raw <span class="ot">=</span> <span class="fu">phy_tree</span>(ps_rare)</span>
+<span id="cb9-50"><a href="rarefaction.html#cb9-50" tabindex="-1"></a>ape<span class="sc">::</span><span class="fu">write.tree</span>(tree.raw , <span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/rarefied_tree.tree&quot;</span>))</span></code></pre></div>
+</div>
+<div id="complete-code-1" class="section level2 hasAnchor" number="4.7">
+<h2><span class="header-section-number">4.7</span> Complete code<a href="rarefaction.html#complete-code-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>You can copy-paste the following block of code inside a new markdown document.
+Code-chunks will be automatically generated and you can use the far right button (<font color='green'> ▶ </font>) to execute all of the code inside each chunk.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="rarefaction.html#cb10-1" tabindex="-1"></a>```{r}</span>
+<span id="cb10-2"><a href="rarefaction.html#cb10-2" tabindex="-1"></a><span class="co"># ----------- Load libraries -----------</span></span>
+<span id="cb10-3"><a href="rarefaction.html#cb10-3" tabindex="-1"></a>library(vegan)</span>
+<span id="cb10-4"><a href="rarefaction.html#cb10-4" tabindex="-1"></a>library(phyloseq)</span>
+<span id="cb10-5"><a href="rarefaction.html#cb10-5" tabindex="-1"></a>library(ggplot2)</span>
+<span id="cb10-6"><a href="rarefaction.html#cb10-6" tabindex="-1"></a>library(tidyverse)</span>
+<span id="cb10-7"><a href="rarefaction.html#cb10-7" tabindex="-1"></a>library(ggpubr)</span>
+<span id="cb10-8"><a href="rarefaction.html#cb10-8" tabindex="-1"></a>library(glue)</span>
+<span id="cb10-9"><a href="rarefaction.html#cb10-9" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="rarefaction.html#cb10-10" tabindex="-1"></a><span class="co"># ----------- Define path -----------</span></span>
+<span id="cb10-11"><a href="rarefaction.html#cb10-11" tabindex="-1"></a>path <span class="op">=</span> <span class="st">&quot;~/project/domain/int_data&quot;</span></span>
+<span id="cb10-12"><a href="rarefaction.html#cb10-12" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="rarefaction.html#cb10-13" tabindex="-1"></a>asv <span class="op">=</span> read.table(<span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_asv.csv&quot;</span>), sep<span class="op">=</span><span class="st">&quot;,&quot;</span>, row.names<span class="op">=</span><span class="dv">1</span>, header<span class="op">=</span>TRUE, check.names<span class="op">=</span>FALSE) </span>
+<span id="cb10-14"><a href="rarefaction.html#cb10-14" tabindex="-1"></a>taxa <span class="op">=</span> read.table(<span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_taxa.csv&quot;</span>), sep<span class="op">=</span><span class="st">&quot;,&quot;</span>, row.names<span class="op">=</span><span class="dv">1</span>, header<span class="op">=</span>TRUE) </span>
+<span id="cb10-15"><a href="rarefaction.html#cb10-15" tabindex="-1"></a>meta <span class="op">=</span> read.table(<span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_meta.csv&quot;</span>), sep<span class="op">=</span><span class="st">&quot;,&quot;</span>, row.names<span class="op">=</span><span class="dv">1</span>, header<span class="op">=</span>TRUE) </span>
+<span id="cb10-16"><a href="rarefaction.html#cb10-16" tabindex="-1"></a>tree <span class="op">=</span> ape::read.tree( <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_tree.tree&quot;</span>))</span>
+<span id="cb10-17"><a href="rarefaction.html#cb10-17" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="rarefaction.html#cb10-18" tabindex="-1"></a><span class="co"># ----------- Merge into phyloseq object -----------</span></span>
+<span id="cb10-19"><a href="rarefaction.html#cb10-19" tabindex="-1"></a>ps<span class="op">=</span>phyloseq(otu_table(asv, taxa_are_rows<span class="op">=</span>TRUE), tax_table(<span class="im">as</span>.matrix(taxa)), sample_data(meta), phy_tree(tree))</span>
+<span id="cb10-20"><a href="rarefaction.html#cb10-20" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="rarefaction.html#cb10-21" tabindex="-1"></a><span class="co"># ----------- Remove low abundant taxa -----------</span></span>
+<span id="cb10-22"><a href="rarefaction.html#cb10-22" tabindex="-1"></a><span class="co"># Set threshold</span></span>
+<span id="cb10-23"><a href="rarefaction.html#cb10-23" tabindex="-1"></a>minTotRelAbun <span class="op">=</span> <span class="fl">5e-5</span></span>
+<span id="cb10-24"><a href="rarefaction.html#cb10-24" tabindex="-1"></a><span class="co"># Get total sum for each taxa</span></span>
+<span id="cb10-25"><a href="rarefaction.html#cb10-25" tabindex="-1"></a>x <span class="op">=</span> taxa_sums(ps)</span>
+<span id="cb10-26"><a href="rarefaction.html#cb10-26" tabindex="-1"></a><span class="co"># Identify taxa with a total sum greater than the defined threshold</span></span>
+<span id="cb10-27"><a href="rarefaction.html#cb10-27" tabindex="-1"></a>keepTaxa <span class="op">=</span> (x <span class="op">/</span> <span class="bu">sum</span>(x)) <span class="op">&gt;</span> minTotRelAbun</span>
+<span id="cb10-28"><a href="rarefaction.html#cb10-28" tabindex="-1"></a><span class="co"># Filter out from the phyloseq object any taxa not identified in the keepTaxa object</span></span>
+<span id="cb10-29"><a href="rarefaction.html#cb10-29" tabindex="-1"></a>prunedSet <span class="op">=</span> prune_taxa(keepTaxa, ps)</span>
+<span id="cb10-30"><a href="rarefaction.html#cb10-30" tabindex="-1"></a><span class="co"># View how many taxa were removed by sample </span></span>
+<span id="cb10-31"><a href="rarefaction.html#cb10-31" tabindex="-1"></a>loss_taxa<span class="op">=</span>data.frame(sample_sums(prunedSet), sample_sums(ps), (sample_sums(prunedSet)<span class="op">-</span>sample_sums(ps)))</span>
+<span id="cb10-32"><a href="rarefaction.html#cb10-32" tabindex="-1"></a></span>
+<span id="cb10-33"><a href="rarefaction.html#cb10-33" tabindex="-1"></a><span class="co"># ----------- Create function -----------</span></span>
+<span id="cb10-34"><a href="rarefaction.html#cb10-34" tabindex="-1"></a>ggrare <span class="op">=</span> function(physeq_object, step <span class="op">=</span> <span class="dv">10</span>, label <span class="op">=</span> NULL, color <span class="op">=</span> NULL, plot <span class="op">=</span> TRUE, parallel <span class="op">=</span> FALSE, se <span class="op">=</span> TRUE) {</span>
+<span id="cb10-35"><a href="rarefaction.html#cb10-35" tabindex="-1"></a>  x <span class="op">=</span> methods::<span class="im">as</span>(phyloseq::otu_table(physeq_object), <span class="st">&quot;matrix&quot;</span>)</span>
+<span id="cb10-36"><a href="rarefaction.html#cb10-36" tabindex="-1"></a>  <span class="cf">if</span> (phyloseq::taxa_are_rows(physeq_object)) { x <span class="op">&lt;-</span> t(x) }</span>
+<span id="cb10-37"><a href="rarefaction.html#cb10-37" tabindex="-1"></a>  <span class="co">## This script is adapted from vegan `rarecurve` function</span></span>
+<span id="cb10-38"><a href="rarefaction.html#cb10-38" tabindex="-1"></a>  tot <span class="op">&lt;-</span> rowSums(x)</span>
+<span id="cb10-39"><a href="rarefaction.html#cb10-39" tabindex="-1"></a>  S <span class="op">&lt;-</span> rowSums(x <span class="op">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb10-40"><a href="rarefaction.html#cb10-40" tabindex="-1"></a>  nr <span class="op">&lt;-</span> nrow(x)</span>
+<span id="cb10-41"><a href="rarefaction.html#cb10-41" tabindex="-1"></a>  rarefun <span class="op">&lt;-</span> function(i) {</span>
+<span id="cb10-42"><a href="rarefaction.html#cb10-42" tabindex="-1"></a>    cat(paste(<span class="st">&quot;rarefying sample&quot;</span>, rownames(x)[i]), sep <span class="op">=</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb10-43"><a href="rarefaction.html#cb10-43" tabindex="-1"></a>    n <span class="op">&lt;-</span> seq(<span class="dv">1</span>, tot[i], by <span class="op">=</span> step)</span>
+<span id="cb10-44"><a href="rarefaction.html#cb10-44" tabindex="-1"></a>    <span class="cf">if</span> (n[length(n)] <span class="op">!=</span> tot[i]) {</span>
+<span id="cb10-45"><a href="rarefaction.html#cb10-45" tabindex="-1"></a>      n <span class="op">&lt;-</span> c(n, tot[i])</span>
+<span id="cb10-46"><a href="rarefaction.html#cb10-46" tabindex="-1"></a>    }</span>
+<span id="cb10-47"><a href="rarefaction.html#cb10-47" tabindex="-1"></a>    y <span class="op">&lt;-</span> vegan::rarefy(x[i, ,drop <span class="op">=</span> FALSE], n, se <span class="op">=</span> se)</span>
+<span id="cb10-48"><a href="rarefaction.html#cb10-48" tabindex="-1"></a>    <span class="cf">if</span> (nrow(y) <span class="op">!=</span> <span class="dv">1</span>) {</span>
+<span id="cb10-49"><a href="rarefaction.html#cb10-49" tabindex="-1"></a>      rownames(y) <span class="op">&lt;-</span> c(<span class="st">&quot;.S&quot;</span>, <span class="st">&quot;.se&quot;</span>)</span>
+<span id="cb10-50"><a href="rarefaction.html#cb10-50" tabindex="-1"></a>      <span class="cf">return</span>(data.frame(t(y), Size <span class="op">=</span> n, Sample <span class="op">=</span> rownames(x)[i]))</span>
+<span id="cb10-51"><a href="rarefaction.html#cb10-51" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb10-52"><a href="rarefaction.html#cb10-52" tabindex="-1"></a>      <span class="cf">return</span>(data.frame(.S <span class="op">=</span> y[<span class="dv">1</span>, ], Size <span class="op">=</span> n, Sample <span class="op">=</span> rownames(x)[i]))</span>
+<span id="cb10-53"><a href="rarefaction.html#cb10-53" tabindex="-1"></a>    }</span>
+<span id="cb10-54"><a href="rarefaction.html#cb10-54" tabindex="-1"></a>  }</span>
+<span id="cb10-55"><a href="rarefaction.html#cb10-55" tabindex="-1"></a>  <span class="cf">if</span> (parallel) {</span>
+<span id="cb10-56"><a href="rarefaction.html#cb10-56" tabindex="-1"></a>    out <span class="op">&lt;-</span> parallel::mclapply(seq_len(nr), rarefun, mc.preschedule <span class="op">=</span> FALSE)</span>
+<span id="cb10-57"><a href="rarefaction.html#cb10-57" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb10-58"><a href="rarefaction.html#cb10-58" tabindex="-1"></a>    out <span class="op">&lt;-</span> lapply(seq_len(nr), rarefun)</span>
+<span id="cb10-59"><a href="rarefaction.html#cb10-59" tabindex="-1"></a>  }</span>
+<span id="cb10-60"><a href="rarefaction.html#cb10-60" tabindex="-1"></a>  df <span class="op">&lt;-</span> do.call(rbind, out)</span>
+<span id="cb10-61"><a href="rarefaction.html#cb10-61" tabindex="-1"></a>  <span class="co"># Get sample data</span></span>
+<span id="cb10-62"><a href="rarefaction.html#cb10-62" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="kw">is</span>.null(phyloseq::sample_data(physeq_object, FALSE))) {</span>
+<span id="cb10-63"><a href="rarefaction.html#cb10-63" tabindex="-1"></a>    sdf <span class="op">&lt;-</span> methods::<span class="im">as</span>(phyloseq::sample_data(physeq_object), <span class="st">&quot;data.frame&quot;</span>)</span>
+<span id="cb10-64"><a href="rarefaction.html#cb10-64" tabindex="-1"></a>    sdf$Sample <span class="op">&lt;-</span> rownames(sdf)</span>
+<span id="cb10-65"><a href="rarefaction.html#cb10-65" tabindex="-1"></a>    data <span class="op">&lt;-</span> merge(df, sdf, by <span class="op">=</span> <span class="st">&quot;Sample&quot;</span>)</span>
+<span id="cb10-66"><a href="rarefaction.html#cb10-66" tabindex="-1"></a>    labels <span class="op">&lt;-</span> data.frame(x <span class="op">=</span> tot, y <span class="op">=</span> S, Sample <span class="op">=</span> rownames(x))</span>
+<span id="cb10-67"><a href="rarefaction.html#cb10-67" tabindex="-1"></a>    labels <span class="op">&lt;-</span> merge(labels, sdf, by <span class="op">=</span> <span class="st">&quot;Sample&quot;</span>)</span>
+<span id="cb10-68"><a href="rarefaction.html#cb10-68" tabindex="-1"></a>  }</span>
+<span id="cb10-69"><a href="rarefaction.html#cb10-69" tabindex="-1"></a>  <span class="co"># Add, any custom-supplied plot-mapped variables</span></span>
+<span id="cb10-70"><a href="rarefaction.html#cb10-70" tabindex="-1"></a>  <span class="cf">if</span> ( length(color) <span class="op">&gt;</span> <span class="dv">1</span> ) {</span>
+<span id="cb10-71"><a href="rarefaction.html#cb10-71" tabindex="-1"></a>    data$color <span class="op">&lt;-</span> color</span>
+<span id="cb10-72"><a href="rarefaction.html#cb10-72" tabindex="-1"></a>    names(data)[names(data) <span class="op">==</span> <span class="st">&quot;color&quot;</span>] <span class="op">&lt;-</span> deparse(substitute(color))</span>
+<span id="cb10-73"><a href="rarefaction.html#cb10-73" tabindex="-1"></a>    color <span class="op">&lt;-</span> deparse(substitute(color))</span>
+<span id="cb10-74"><a href="rarefaction.html#cb10-74" tabindex="-1"></a>  }</span>
+<span id="cb10-75"><a href="rarefaction.html#cb10-75" tabindex="-1"></a>  <span class="cf">if</span> ( length(label) <span class="op">&gt;</span> <span class="dv">1</span> ) {</span>
+<span id="cb10-76"><a href="rarefaction.html#cb10-76" tabindex="-1"></a>    labels$label <span class="op">&lt;-</span> label</span>
+<span id="cb10-77"><a href="rarefaction.html#cb10-77" tabindex="-1"></a>    names(labels)[names(labels) <span class="op">==</span> <span class="st">&quot;label&quot;</span>] <span class="op">&lt;-</span> deparse(substitute(label))</span>
+<span id="cb10-78"><a href="rarefaction.html#cb10-78" tabindex="-1"></a>    label <span class="op">&lt;-</span> deparse(substitute(label))</span>
+<span id="cb10-79"><a href="rarefaction.html#cb10-79" tabindex="-1"></a>  }</span>
+<span id="cb10-80"><a href="rarefaction.html#cb10-80" tabindex="-1"></a>  p <span class="op">&lt;-</span> ggplot2::ggplot(data <span class="op">=</span> data,</span>
+<span id="cb10-81"><a href="rarefaction.html#cb10-81" tabindex="-1"></a>                       ggplot2::aes_string(x <span class="op">=</span> <span class="st">&quot;Size&quot;</span>,</span>
+<span id="cb10-82"><a href="rarefaction.html#cb10-82" tabindex="-1"></a>                                           y <span class="op">=</span> <span class="st">&quot;.S&quot;</span>,</span>
+<span id="cb10-83"><a href="rarefaction.html#cb10-83" tabindex="-1"></a>                                           group <span class="op">=</span> <span class="st">&quot;Sample&quot;</span>,</span>
+<span id="cb10-84"><a href="rarefaction.html#cb10-84" tabindex="-1"></a>                                           color <span class="op">=</span> color))</span>
+<span id="cb10-85"><a href="rarefaction.html#cb10-85" tabindex="-1"></a>  p <span class="op">&lt;-</span> p <span class="op">+</span> ggplot2::labs(x <span class="op">=</span> <span class="st">&quot;Number of sequence reads&quot;</span>, y <span class="op">=</span> <span class="st">&quot;ASV richness&quot;</span>)</span>
+<span id="cb10-86"><a href="rarefaction.html#cb10-86" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="kw">is</span>.null(label)) {</span>
+<span id="cb10-87"><a href="rarefaction.html#cb10-87" tabindex="-1"></a>    p <span class="op">&lt;-</span> p <span class="op">+</span> ggplot2::geom_text(data <span class="op">=</span> labels,</span>
+<span id="cb10-88"><a href="rarefaction.html#cb10-88" tabindex="-1"></a>                                ggplot2::aes_string(x <span class="op">=</span> <span class="st">&quot;x&quot;</span>,</span>
+<span id="cb10-89"><a href="rarefaction.html#cb10-89" tabindex="-1"></a>                                                    y <span class="op">=</span> <span class="st">&quot;y&quot;</span>,</span>
+<span id="cb10-90"><a href="rarefaction.html#cb10-90" tabindex="-1"></a>                                                    label <span class="op">=</span> label,</span>
+<span id="cb10-91"><a href="rarefaction.html#cb10-91" tabindex="-1"></a>                                                    color <span class="op">=</span> color),</span>
+<span id="cb10-92"><a href="rarefaction.html#cb10-92" tabindex="-1"></a>                                size <span class="op">=</span> <span class="dv">4</span>, hjust <span class="op">=</span> <span class="dv">0</span>, show.legend<span class="op">=</span>FALSE)</span>
+<span id="cb10-93"><a href="rarefaction.html#cb10-93" tabindex="-1"></a>  }</span>
+<span id="cb10-94"><a href="rarefaction.html#cb10-94" tabindex="-1"></a>  p <span class="op">&lt;-</span> p <span class="op">+</span> ggplot2::geom_line()</span>
+<span id="cb10-95"><a href="rarefaction.html#cb10-95" tabindex="-1"></a>  <span class="cf">if</span> (se) { <span class="co">## add standard error if available</span></span>
+<span id="cb10-96"><a href="rarefaction.html#cb10-96" tabindex="-1"></a>    p <span class="op">&lt;-</span> p <span class="op">+</span></span>
+<span id="cb10-97"><a href="rarefaction.html#cb10-97" tabindex="-1"></a>      ggplot2::geom_ribbon(ggplot2::aes_string(ymin <span class="op">=</span> <span class="st">&quot;.S - .se&quot;</span>,</span>
+<span id="cb10-98"><a href="rarefaction.html#cb10-98" tabindex="-1"></a>                                               ymax <span class="op">=</span> <span class="st">&quot;.S + .se&quot;</span>,</span>
+<span id="cb10-99"><a href="rarefaction.html#cb10-99" tabindex="-1"></a>                                               color <span class="op">=</span> NULL,</span>
+<span id="cb10-100"><a href="rarefaction.html#cb10-100" tabindex="-1"></a>                                               fill <span class="op">=</span> color),</span>
+<span id="cb10-101"><a href="rarefaction.html#cb10-101" tabindex="-1"></a>                           alpha <span class="op">=</span> <span class="fl">0.2</span>)</span>
+<span id="cb10-102"><a href="rarefaction.html#cb10-102" tabindex="-1"></a>  }</span>
+<span id="cb10-103"><a href="rarefaction.html#cb10-103" tabindex="-1"></a>  <span class="cf">if</span> (plot) {</span>
+<span id="cb10-104"><a href="rarefaction.html#cb10-104" tabindex="-1"></a>    plot(p)</span>
+<span id="cb10-105"><a href="rarefaction.html#cb10-105" tabindex="-1"></a>  }</span>
+<span id="cb10-106"><a href="rarefaction.html#cb10-106" tabindex="-1"></a>  invisible(p)</span>
+<span id="cb10-107"><a href="rarefaction.html#cb10-107" tabindex="-1"></a>}</span>
+<span id="cb10-108"><a href="rarefaction.html#cb10-108" tabindex="-1"></a></span>
+<span id="cb10-109"><a href="rarefaction.html#cb10-109" tabindex="-1"></a><span class="co"># ----------- Plot rarefaction curves -----------</span></span>
+<span id="cb10-110"><a href="rarefaction.html#cb10-110" tabindex="-1"></a>p <span class="op">=</span> ggrare(prunedSet, step <span class="op">=</span> <span class="dv">20</span>, color <span class="op">=</span> <span class="st">&quot;characteristic&quot;</span>, label <span class="op">=</span> <span class="st">&quot;Sample&quot;</span>, se <span class="op">=</span> FALSE) </span>
+<span id="cb10-111"><a href="rarefaction.html#cb10-111" tabindex="-1"></a>```</span>
+<span id="cb10-112"><a href="rarefaction.html#cb10-112" tabindex="-1"></a>OPTION <span class="dv">1</span> : rarefy to the lowest sequence number greater than <span class="dv">1000</span></span>
+<span id="cb10-113"><a href="rarefaction.html#cb10-113" tabindex="-1"></a>```{r}</span>
+<span id="cb10-114"><a href="rarefaction.html#cb10-114" tabindex="-1"></a><span class="co"># Get dataframe of sequences per sample</span></span>
+<span id="cb10-115"><a href="rarefaction.html#cb10-115" tabindex="-1"></a>sample_size <span class="op">=</span> <span class="im">as</span>.data.frame(sample_sums(prunedSet))</span>
+<span id="cb10-116"><a href="rarefaction.html#cb10-116" tabindex="-1"></a><span class="co"># Filter for the lowest number above 1000 </span></span>
+<span id="cb10-117"><a href="rarefaction.html#cb10-117" tabindex="-1"></a>rare_value <span class="op">=</span> sample_size[which.<span class="bu">max</span>((sample_size[,<span class="dv">1</span>] <span class="op">&gt;=</span> <span class="dv">1000</span>)<span class="op">/</span>sample_size[,<span class="dv">1</span>]),]</span>
+<span id="cb10-118"><a href="rarefaction.html#cb10-118" tabindex="-1"></a><span class="co"># Rarefy to value identified as rare_value</span></span>
+<span id="cb10-119"><a href="rarefaction.html#cb10-119" tabindex="-1"></a>ps_rare<span class="op">=</span>rarefy_even_depth(prunedSet, rare_value, rngseed <span class="op">=</span> <span class="dv">112</span>, replace <span class="op">=</span> FALSE, trimOTUs <span class="op">=</span> TRUE, verbose <span class="op">=</span> TRUE) </span>
+<span id="cb10-120"><a href="rarefaction.html#cb10-120" tabindex="-1"></a><span class="co"># Confirm rarefaction as a sanity check </span></span>
+<span id="cb10-121"><a href="rarefaction.html#cb10-121" tabindex="-1"></a>sample_sums(ps_rare)</span>
+<span id="cb10-122"><a href="rarefaction.html#cb10-122" tabindex="-1"></a>```</span>
+<span id="cb10-123"><a href="rarefaction.html#cb10-123" tabindex="-1"></a>OPTION <span class="dv">2</span> : Use the information <span class="im">from</span> the graph to determine an optimal threshold </span>
+<span id="cb10-124"><a href="rarefaction.html#cb10-124" tabindex="-1"></a>```{r}</span>
+<span id="cb10-125"><a href="rarefaction.html#cb10-125" tabindex="-1"></a><span class="co"># Define value for rarefying</span></span>
+<span id="cb10-126"><a href="rarefaction.html#cb10-126" tabindex="-1"></a>rare_value<span class="op">=</span><span class="dv">1019</span> </span>
+<span id="cb10-127"><a href="rarefaction.html#cb10-127" tabindex="-1"></a><span class="co"># Rarefy to value identified as rare_value</span></span>
+<span id="cb10-128"><a href="rarefaction.html#cb10-128" tabindex="-1"></a>ps_rare<span class="op">=</span>rarefy_even_depth(prunedSet, rare_value, rngseed <span class="op">=</span> <span class="dv">112</span>, replace <span class="op">=</span> FALSE, trimOTUs <span class="op">=</span> TRUE, verbose <span class="op">=</span> TRUE) </span>
+<span id="cb10-129"><a href="rarefaction.html#cb10-129" tabindex="-1"></a><span class="co"># Confirm rarefaction as a sanity check </span></span>
+<span id="cb10-130"><a href="rarefaction.html#cb10-130" tabindex="-1"></a>sample_sums(ps_rare)</span>
+<span id="cb10-131"><a href="rarefaction.html#cb10-131" tabindex="-1"></a>``` </span>
+<span id="cb10-132"><a href="rarefaction.html#cb10-132" tabindex="-1"></a></span>
+<span id="cb10-133"><a href="rarefaction.html#cb10-133" tabindex="-1"></a>Save rarefied table</span>
+<span id="cb10-134"><a href="rarefaction.html#cb10-134" tabindex="-1"></a>```{r}</span>
+<span id="cb10-135"><a href="rarefaction.html#cb10-135" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(tax_table(ps_rare), <span class="st">&quot;matrix&quot;</span>)), <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/rarefied_taxa.csv&quot;</span>))</span>
+<span id="cb10-136"><a href="rarefaction.html#cb10-136" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(otu_table(ps_rare), <span class="st">&quot;matrix&quot;</span>)),<span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/rarefied_asv.csv&quot;</span>))</span>
+<span id="cb10-137"><a href="rarefaction.html#cb10-137" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(sample_data(ps_rare), <span class="st">&quot;matrix&quot;</span>)), <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/rarefied_meta.csv&quot;</span>))</span>
+<span id="cb10-138"><a href="rarefaction.html#cb10-138" tabindex="-1"></a>tree.raw <span class="op">=</span> phy_tree(ps_rare)</span>
+<span id="cb10-139"><a href="rarefaction.html#cb10-139" tabindex="-1"></a>ape::write.tree(tree.raw , <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/rarefied_tree.tree&quot;</span>))</span></code></pre></div>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="dada2-pipeline.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="stacked-taxonomy-bar-graphs.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/02-Rarefaction.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

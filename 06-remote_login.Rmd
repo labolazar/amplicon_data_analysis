@@ -1,0 +1,25 @@
+# Remote login
+
+## RStudio Server 
+
+RStudio Server provides a browser-based interface to a version of R running on a remote Linux server. 
+To begin, open a new browser window and enter the address which corresponds to your server. Use your given credentials to log in.
+
+- **Orion** : 132.208.64.232:8787
+- **Hercules** :132.208.64.220:8787
+- **Ulysse** : 132.208.64.213:8787
+
+## Terminal 
+
+Remotely log into your session on your attributed server by using the secure shell (ssh) cryptographic network protocol. Inside a terminal window use the following command but replace `username` and `servername` to your given credentials and server.  
+
+```{bash, eval=FALSE} 
+ssh username@servername.bio.uqam.ca 
+``` 
+
+
+## Usefull applications and tools
+
+(1) the terminal application from your computer and log into your server with ssh 
+(2) the RStudio `Terminal` (located next to the `Console` tab) 
+(3) any File Transfer Protocol (FTP) applications such as FileZila or Cyberduck. 

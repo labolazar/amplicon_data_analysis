@@ -1,0 +1,670 @@
+
+# DADA2 pipeline
+<!-- Chunk to allow horizontal scroll in chunks rather than wrap text  -->
+```{css, echo=FALSE}
+pre, code {white-space:pre !important; overflow-x:auto}
+```
+
+This general workflow presents the typical commands used to process amplicon sequencing data. Please note that for some steps the commands will vary based on which Kingdom (Bacteria, Archaea or Eukaryote) the data being processed belongs to. 
+
+The first section ([General workflow]) generally describes and breakdowns each steps of the analysis. In the second section ([Complete code]) the reader will find a single chunk of code which she/he can copy-paste into a new rmarkdown document and execute each chunk of code. Finally, the third section ([Forward reads only]) also contains a single chunk of code to use only with archaeal sequences when the quality of the reverse read for is of too poor quality to allow the merging of forward and reverse read and thus only the forward reads are processed. 
+
+## General workflow 
+
+### Getting ready 
+
+Load required libraries
+```{r, eval=FALSE}
+library(dada2)
+library(decontam)
+library(phyloseq)
+library(DECIPHER)
+library(phangorn)
+```
+
+The first step is to define where the fastq files are located. **Please Modify this path accordingly**. For more information on how to organize your files and folders on your server please see section [Setting up your environment]. 
+
+To validate that we are in the correct folder we then use the command `list.files` to print out all files contained in the folder previously defined. 
+```{r, eval=FALSE}
+path = "~/project/domain/raw_data"
+list.files(path)
+``` 
+We then extract each sample name from the forward and reverse fastq files using some string manipulation assuming the name of our files respect the following format : 
+
+- Forward reads : `sample-name_domain_xxx_L001_R1_001.fastq`
+- Reverse reads : `sample-name_domain_xxx_L001_R2_001.fastq`
+
+```{r, eval=FALSE}
+fnFs = sort(list.files(path, pattern="_R1_001.fastq", full.names = TRUE)) 
+fnRs = sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
+
+sample.names = sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+``` 
+
+### Inspect quality
+
+In order to inspect the read quality profiles we use the command `plotQualityProfile` to plot a visual summary of the distribution of quality scores as a function of sequence position for the input fastq file. 
+```{r, eval=FALSE}
+plotQualityProfile(fnFs, aggregate=TRUE)
+plotQualityProfile(fnRs, aggregate=TRUE)
+``` 
+In gray-scale is a heat map of the frequency of each quality score at each base position. The mean quality score at each position is shown by the green line, and the quartiles of the quality score distribution by the orange lines. The red line shows the scaled proportion of reads that extend to at least that position (this is more useful for other sequencing technologies, as Illumina reads are typically all the same length, hence the flat red line). The reverse reads are generally of significantly worse quality, especially at the end, which is common in Illumina sequencing.
+
+### Filter and trim sequences 
+
+Before trimming we assign the filenames for the filtered fastq.gz files and place filtered files in the created `filtered` subdirectory. 
+
+The command `trimleft` is used to remove the primers (based on primer length) and `truncLen`to trim the reads based on where the average quality begins to crash on the previously generated graphs. Nucleotides after the specified position will be removed. 
+
+**For Bacterias**
+
+- Lenght of primer B341F (CCT ACG GGA GGC AGC AG) : 18 nucleotides
+- Lenght of primer B785R  (GAC TAC HVG GGT ATC TAA TCC): 21 nucleotides
+
+**For Archaea**
+
+- Lenght of primer A340F (CCC TAC GGG GYG CAS CAG) : 18 nucleotides
+- Lenght of primer A915R  (GTG CTC CCC CGC CAA TTC CT) : 20 nucleotides
+
+**For Eukaryotes**
+
+- Lenght of primer E960F (GGC TTA ATT TGA CTC AAC RCG) : 21 nucleotides
+- Lenght of primer NSR1438R  (GGC TTA ATT TGA CTC AAC RCG) : 21 nucleotides
+
+```{r, eval=FALSE}
+filtFs = file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs = file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+
+names(filtFs) = sample.names
+names(filtRs) = sample.names
+# For Bacteria 
+out = filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft = c(18,21), truncLen=c(280,240),
+                     maxN=0, maxEE=c(2,2), truncQ=2,rm.phix=TRUE, 
+                     compress=TRUE, multithread=TRUE) 
+# For Archaea 
+out = filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft = c(18,20), truncLen=c(280,240),
+                     maxN=0, maxEE=c(2,2), truncQ=2,rm.phix=TRUE, 
+                     compress=TRUE, multithread=TRUE) 
+# For Eukaryotes 
+out = filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft = c(21,21), truncLen=c(280,240),
+                     maxN=0, maxEE=c(2,2), truncQ=2,rm.phix=TRUE, 
+                     compress=TRUE, multithread=TRUE) 
+``` 
+
+### Learn error rates 
+
+The DADA2 algorithm makes use of a parametric error model (err) and every amplicon dataset has a different set of error rates. The `learnErrors` method learns this error model from the data, by alternating estimation of the error rates and inference of sample composition until they converge on a jointly consistent solution. As in many machine-learning problems, the algorithm must begin with an initial guess, for which the maximum possible error rates in this data are used (the error rates if only the most abundant sequence is correct and all the rest are errors).
+
+**Please note** that for some reason `multithread=TRUE` causes problem for users on a Microsoft Windows operating system and should therefore set this parameter to FALSE. Such modification should be made for all other instances where parameter `multithread` is specified
+
+```{r, eval=FALSE}
+# Learn error rates for forward and reverse reads
+errF = learnErrors(filtFs, multithread=TRUE, randomize=TRUE)
+errR = learnErrors(filtRs, multithread=TRUE, randomize=TRUE)
+
+# visualize the estimated error rates, as a sanity check if nothing else
+plotErrors(errF, nominalQ=TRUE)
+
+# Apply the core sample inference algorithm to the filtered and trimmed sequence data
+dadaFs = dada(filtFs, err=errF, pool = "pseudo", multithread=TRUE)
+dadaRs = dada(filtRs, err=errR, pool = "pseudo", multithread=TRUE)
+```
+
+### Merge paired reads
+
+We can now merge the forward and reverse reads together to obtain the full denoised sequences. Merging is performed by aligning the denoised forward reads with the reverse-complement of the corresponding denoised reverse reads, and then constructing the merged “contig” sequences. By default, merged sequences are only output if the forward and reverse reads overlap by at least 12 bases, and are identical to each other in the overlap region (but these conditions can be changed via function arguments).
+```{r, eval=FALSE} 
+# Merging the paired reads
+mergers = mergePairs(dadaFs, filtFs, dadaRs, filtRs)
+# Construct an amplicon sequence variant table (ASV) table (a higher-resolution version of the OTU table produced by traditional methods)
+seqtab = makeSequenceTable(mergers)
+#View dimension of your matrices 
+dim(seqtab)
+# Inspect distribution of sequence lengths
+table(nchar(getSequences(seqtab)))
+``` 
+
+#### Remove chimeras
+
+Removing chimeras with the function `removeBimeraDenovo`. The core dada method corrects substitution and indel errors, but chimeras remain. Fortunately, the accuracy of sequence variants after denoising makes identifying chimeric ASVs simpler than when dealing with fuzzy OTUs. Chimeric sequences are identified if they can be exactly reconstructed by combining a left-segment and a right-segment from two more abundant “parent” sequences.
+```{r, eval=FALSE}
+# Remove chimeras
+seqtab.nochim = removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE)
+#View dimension of your matrices and proportion of non-chimeric sequences
+dim(seqtab.nochim)
+sum(seqtab.nochim)/sum(seqtab)
+```
+
+### Track reads through pipeline
+
+As a final check of our progress, we’ll look at the number of reads that made it through each step in the pipeline with the following commands. This is a great place to do a last sanity check. Outside of filtering, there should be no step in which a majority of reads are lost. If a majority of reads failed to merge, you may need to revisit the `truncLen` parameter used in the filtering step and make sure that the truncated reads span your amplicon. If a majority of reads were removed as chimeric, you may need to revisit the removal of primers, as the ambiguous nucleotides in unremoved primers interfere with chimera identification.
+ 
+```{r, eval=FALSE}
+getN = function(x) sum(getUniques(x))
+track = cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))
+colnames(track) = c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) = sample.names
+track
+``` 
+
+### Classify sequences
+
+The DADA2 package provides a native implementation of the [naïve Bayesian classifier method](https://pubmed.ncbi.nlm.nih.gov/17586664/) to assign taxonomy to the sequence variants. The `assignTaxonomy` function takes as input a set of sequences to be classified and a training set of reference sequences with known taxonomy, and outputs taxonomic assignments. The DADA2 team maintains [DADA2-formatted reference fastas](https://benjjneb.github.io/dada2/training.html) for the three most common 16S databases (Silva, RDP and GreenGenes) as well as additional trainings fastas suitable for protists and certain contributed specific environments 
+
+The minimum bootstrap confidence for assigning a taxonomic level.
+
+**Database for Procaryotes**
+```{r, eval=FALSE}
+taxa = assignTaxonomy(seqtab.nochim, "/home/16S_db/silva_nr99_v138.1_train_set.fa.gz", multithread=TRUE, tryRC=TRUE)
+``` 
+
+**Further classification for Archaeas**
+
+The same silva database is used for the classification of Bacterias and Archaeas but we also use a custom database to further classify sequences which failed initial classification for Archaeas. For this we use the function `IdTaxa` from the [DECIPHER](http://www2.decipher.codes/) package.
+
+```{r, eval=FALSE}
+# Extract sequences not identified to the phylum and domain
+taxint = subset(taxa, is.na(phylum))
+taxide = subset(taxa, !(is.na(domain)))
+# View how many sequences 
+dim(taxint)
+
+seqtabint =as.data.frame(seqtab.nochim)
+seqtabint = seqtab.nochim[,colnames(seqtab.nochim) %in% rownames(taxint)]
+
+# Reclassify with custom database arc.cassandre
+load("/home/16S_db/arc.cassandre.trainingset.RData") 
+dna = DNAStringSet(getSequences(seqtabint)) # Create a DNAStringSet from the ASVs
+ids = IdTaxa(dna, trainingSet, strand="both", processors=NULL, verbose=FALSE, threshold = 50)
+
+taxint = t(sapply(ids, function(x) {
+        m = match(ranks, x$rank)
+        taxa = x$taxon[m]
+        taxa[startsWith(taxa, "Unclassified_")] = NA
+        taxa
+}))
+colnames(taxint) = ranks; rownames(taxint) = getSequences(seqtabint)
+
+# Keep only sequences classified Archaea
+taxint =subset(as.data.frame(taxint), domain =="Archaea")
+# Swap previously classified sequences with SILVA to those classified using the custom and more precise database 
+taxide = taxide[!(rownames(taxide) %in% rownames(taxint)),]
+# Merge both tables 
+taxa = rbind(taxide, as.data.frame(taxint))
+seqtab.nochim = seqtab.nochim[,colnames(seqtab.nochim) %in% rownames(taxid)]
+```
+
+**Database for Eukaryotes**
+
+As of Silva version 138, the official DADA2-formatted reference fastas are optimized for classification of Bacteria and Archaea, and are not suitable for classifying Eukaryotes and we therefore use PR2 database. Note that this database has different `taxLevels` than the DADA2 default.
+
+```{r, eval=FALSE}
+taxa = assignTaxonomy(seqtab.nochim, "/home/16S_db/pr2_version_5.0.0_SSU_dada2.fasta.gz", multithread=TRUE, tryRC=TRUE, taxLevels = c("Kingdom","Supergroup","Division","Class","Order","Family","Genus","Species"))
+``` 
+
+### Add highest identified taxonomic rank to unclassified ranks 
+```{r, eval=FALSE}
+# transpose table 
+taxid=data.frame(t(taxa)) 
+# As a sanity check transform every cells to characters
+taxid[] = lapply(taxid, as.character) 
+# Fills the NAs with the most recent non-NA value
+taxa2= tidyr::fill(taxid, colnames(taxid),.direction = "down") 
+# Paste Unclassified_ to the beginning of every cells
+taxa2= sapply(taxa2, function(x){paste0("Unclassified_", x)}) 
+# Replace NAs to it's value from the table taxa2
+taxid[is.na(taxid)] = taxa2[is.na(taxid)] 
+ # Transpose table again
+taxid = t(taxid)
+```
+
+Finally we remove from the tax table and ASV matrix the ASVs not classified to our domain or Kingdom of interest. If applicable replace Bacteria for either Archaea or Eukaryotes. 
+```{r, eval=FALSE}
+taxid=subset(as.data.frame(taxid), Kingdom =="Bacteria")
+seqtab.nochim = seqtab.nochim[,colnames(seqtab.nochim) %in% rownames(taxid)]
+```
+
+### Removing contaminants 
+
+The `decontam` package provides simple statistical methods to identify and visualize contaminating DNA features, allowing them to be removed and ultimately get a more accurate picture of the sampled communities to be constructed from marker-gene data. The package was designed to work with `phyloseq` objects from the phyloseq package. 
+
+For this tutorial, the use of the `decontam` requires the two following : 
+
+- A table of the relative abundances of sequence features (columns) in each sample (rows). 
+- A metadata table where a defined set of “negative control” (samples in which sequencing was performed on blanks without any biological sample added) are identified as TRUE in a column called `negative` while other samples are identified as FALSE. 
+
+We first load the metadata table where negative control are clearly identified and then generate a phyloseq object combining the table of relative abundances of sequences, the taxonomy table and the metadata table 
+```{r, eval=FALSE}
+meta = read.table("metadata.csv", sep=",", row.names=1, header=TRUE)
+ps = phyloseq(otu_table(t(seqtab.nochim), taxa_are_rows=TRUE), tax_table(as.matrix(taxid)), sample_data(meta))
+``` 
+
+The contaminant identification method used in this workflow is the prevalence method (presence/absence across samples). In this method, the prevalence of each sequence feature in true positive samples is compared to the prevalence in negative controls to identify contaminants.  In the prevalence test there is a special value worth knowing, `threshold=0.5`, that will identify as contaminants all sequences that are are more prevalent in negative controls than in positive samples.
+```{r, eval=FALSE}
+contamdf.prev = isContaminant(ps, method="prevalence", neg="negative", threshold=0.5)
+# Get the count of TRUE contaminant vs FALSE
+table(contamdf.prev$contaminant) 
+# Remove sequences identified as contaminant
+ps.noncontam = prune_taxa(!contamdf.prev$contaminant, ps) 
+ # Remove negative control samples
+ps_decontam=subset_samples(ps.noncontam, !negative=="TRUE")
+```
+
+### Generate a phylogenetic tree  
+
+Generating a phylogenetic tree is not mandatory for the downstream analysis unless the user plans on using any phylogeny based diversity metrics such as Unifrac. 
+
+To build such tree we start by aligning the sequencing using the `AlignSeqs` function from package `DECIPHER`. 
+```{r, eval=FALSE}
+# Extract sequences from phyloseq object
+asv_tab=as.data.frame(otu_table(ps_decontam))
+seqs = getSequences(t(asv_tab))
+names(seqs) = seqs
+# Aligning sequences
+seq_align = AlignSeqs(DNAStringSet(seqs), anchor=NA, processors=20)
+# Set path to save the aligned sequence fastq file  
+writeXStringSet(seq_align, file = "~/project/domain/raw_data/align.fasta",format="fasta")
+``` 
+
+We then used the aligned fastq file to generate the tree using the tool [FastTree](http://www.microbesonline.org/fasttree/). 
+As this tool is not an R library but rather a linux program the following commands must be executed from a terminal/command prompt.  
+
+```{bash, eval=FALSE}
+# Change directory to the one containing the align.fasta file
+cd ~/project/domain/raw_data/
+# Execute fasttree algorithm on the align.fasta file and generate the file align_tree
+fasttree -nt -gtr  align.fasta > align_tree
+``` 
+
+The generated phylogenetic tree needs to be rooted to calculate any phylogeny based diversity metrics. For this we use the function `midpoint` from package [phangorn](https://www.rdocumentation.org/packages/phangorn/versions/2.11.1). 
+```{r, eval=FALSE}
+# Load file align_tree
+Tree = ape::read.tree(file = "~/project/domain/raw_data/align_tree")
+# Add midpoint to tree
+Tree.midpoint = phangorn::midpoint(Tree)
+``` 
+
+Finally we add the rooted tree to our phyloseq object 
+```{r, eval=FALSE}
+tree = phy_tree(Tree.midpoint)
+ps1 = merge_phyloseq(ps_decontam, tree)
+``` 
+
+### Add DNA sequences
+
+```{r, eval=FALSE}
+dna = Biostrings::DNAStringSet(taxa_names(ps_decontam))
+names(dna) = taxa_names(ps_decontam)
+ps1=merge_phyloseq(ps1, dna)
+```
+
+### Shorten ASV name 
+
+We shorten ASV name from complete sequence to ASV#. 
+```{r, eval=FALSE}
+taxa_names(ps1) = paste0("ASV", seq(ntaxa(ps1)))
+``` 
+
+### Save tables 
+```{r, eval=FALSE}
+
+saving_path = "~/project/domain/int_data"
+
+write.csv(as.data.frame(as(tax_table(ps1), "matrix")), file = glue("{path}/raw_taxa.csv"))
+write.csv(as.data.frame(as(otu_table(ps1), "matrix")),file = glue("{path}/raw_asv.csv"))
+write.csv(as.data.frame(as(sample_data(ps1), "matrix")), file = glue("{path}/raw_meta.csv"))
+tree.raw = phy_tree(ps1)
+ape::write.tree(tree.raw , file = glue("{path}/raw_tree.tree"))
+ps1 %>% refseq() %>% Biostrings::writeXStringSet(glue("{path}/raw_refseq.fna"), append=FALSE,
+                                  compress=FALSE, compression_level=NA, format="fasta")
+```
+
+## Complete code 
+
+You can copy-paste the following block of code inside a new markdown document. 
+Code-chunks will be automatically generated and you can use the far right button (<font color='green'> ▶ </font>) to execute all of the code inside each chunk.
+
+````{verbatim, lang = "python"}
+```{r}
+# ----------- Load libraries -----------
+library(dada2)
+library(decontam)
+library(phyloseq)
+library(DECIPHER)
+library(phangorn)
+
+# ----------- Set path where fastq files are located -----------
+path = "~/project/domain/raw_data"
+list.files(path)
+
+fnFs = sort(list.files(path, pattern="_R1_001.fastq", full.names = TRUE)) 
+fnRs = sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
+
+sample.names = sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+
+# ----------- Inspect quality -----------
+plotQualityProfile(fnFs, aggregate=TRUE)
+plotQualityProfile(fnRs, aggregate=TRUE)
+```
+
+⛔# Before executing the next chunk of code inspect the generated graphs 
+⛔# to determine which value to use with function "truncLen" 
+
+```{r}
+# ----------- Filter and trim ----------- 
+filtFs = file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs = file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+
+names(filtFs) = sample.names
+names(filtRs) = sample.names
+
+# ------ ### For Bacteria ### ------ #
+out = filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft = c(18,21), truncLen=c(280,240),
+                     maxN=0, maxEE=c(2,2), truncQ=2,rm.phix=TRUE, 
+                     compress=TRUE, multithread=TRUE) 
+# ------ ### For Archaea ### ------ #
+out = filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft = c(18,20), truncLen=c(280,240),
+                     maxN=0, maxEE=c(2,2), truncQ=2,rm.phix=TRUE, 
+                     compress=TRUE, multithread=TRUE) 
+# ------ ### For Eukaryotes ### ------ #
+out = filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft = c(21,21), truncLen=c(280,240),
+                     maxN=0, maxEE=c(2,2), truncQ=2,rm.phix=TRUE, 
+                     compress=TRUE, multithread=TRUE) 
+
+# ----------- Learn error rates ----------- 
+errF = learnErrors(filtFs, multithread=TRUE, randomize=TRUE)
+errR = learnErrors(filtRs, multithread=TRUE, randomize=TRUE)
+
+# visualize the estimated error rates, as a sanity check if nothing else
+plotErrors(errF, nominalQ=TRUE)
+
+# Apply the core sample inference algorithm to the filtered and trimmed sequence data
+dadaFs = dada(filtFs, err=errF, pool = "pseudo", multithread=TRUE)
+dadaRs = dada(filtRs, err=errR, pool = "pseudo", multithread=TRUE)
+
+# ----------- Construct amplicon sequence variant table (ASV) ----------- 
+# Merging the paired reads
+mergers = mergePairs(dadaFs, filtFs, dadaRs, filtRs)
+# Construct an amplicon sequence variant table (ASV) table (a higher-resolution version of the OTU table produced by traditional methods)
+seqtab = makeSequenceTable(mergers)
+#View dimension of your matrices 
+dim(seqtab)
+# Inspect distribution of sequence lengths
+table(nchar(getSequences(seqtab)))
+
+# ----------- Remove chimeras ----------- 
+seqtab.nochim = removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE)
+#View dimension of your matrices 
+dim(seqtab.nochim)
+sum(seqtab.nochim)/sum(seqtab)
+
+# ----------- Track reads through pipeline ----------- 
+getN = function(x) sum(getUniques(x))
+track = cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))
+colnames(track) = c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) = sample.names
+track
+
+# ----------- Assign taxonomy  -----------
+
+# ------ ### For Procayotes ### ------ #
+taxa = assignTaxonomy(seqtab.nochim, "/home/16S_db/silva_nr99_v138.1_train_set.fa.gz", multithread=TRUE, tryRC=TRUE)
+
+# ------ ### Further classification for Archaea ### ------ #
+# Extract sequences not identified to the phylum and domain
+taxint = subset(taxa, is.na(phylum))
+taxide = subset(taxa, !(is.na(domain)))
+# View how many sequences 
+dim(taxint)
+seqtabint = as.data.frame(seqtab.nochim)
+seqtabint = seqtab.nochim[,colnames(seqtab.nochim) %in% rownames(taxint)]
+# Reclassify with custom database arc.cassandre
+load("/home/16S_db/arc.cassandre.trainingset.RData") 
+dna = DNAStringSet(getSequences(seqtabint)) # Create a DNAStringSet from the ASVs
+ids = IdTaxa(dna, trainingSet, strand="both", processors=NULL, verbose=FALSE, threshold = 50)
+taxint = t(sapply(ids, function(x) {
+        m = match(ranks, x$rank)
+        taxa = x$taxon[m]
+        taxa[startsWith(taxa, "Unclassified_")] = NA
+        taxa
+}))
+colnames(taxint) = ranks; rownames(taxint) = getSequences(seqtabint)
+# Keep only sequences classified Archaea
+taxint = subset(as.data.frame(taxint), domain =="Archaea")
+# Swap previously classified sequences with SILVA to those classified using the custom and more precise database 
+taxide = taxide[!(rownames(taxide) %in% rownames(taxint)),]
+# Merge both tables 
+taxa = rbind(taxide, as.data.frame(taxint))
+seqtab.nochim = seqtab.nochim[,colnames(seqtab.nochim) %in% rownames(taxid)]
+
+# ------ ### For Eukaryote ### ------ #
+taxa = assignTaxonomy(seqtab.nochim, "/home/16S_db/pr2_version_5.0.0_SSU_dada2.fasta.gz", multithread=TRUE, tryRC=TRUE, taxLevels = c("Kingdom","Supergroup","Division","Class","Order","Family","Genus","Species"))
+
+# ----------- Add highest classified rank to unclassified -----------
+# transpose table 
+taxid = data.frame(t(taxa)) 
+# As a sanity check transform every cells to characters
+taxid[] = lapply(taxid, as.character) 
+# Fills the NAs with the most recent non-NA value
+taxa2= tidyr::fill(taxid, colnames(taxid),.direction = "down") 
+# Paste Unclassified_ to the beginning of every cells
+taxa2= sapply(taxa2, function(x){paste0("Unclassified_", x)}) 
+# Replace NAs to it's value from the table taxa2
+taxid[is.na(taxid)] = taxa2[is.na(taxid)] 
+ # Transpose table again
+taxid = t(taxid)
+
+# ----------- Remove contaminants -----------
+meta = read.table("metadata.csv", sep=",", row.names=1, header=TRUE)
+ps = phyloseq(otu_table(t(seqtab.nochim), taxa_are_rows=TRUE), tax_table(as.matrix(taxid)), sample_data(meta))
+contamdf.prev = isContaminant(ps, method="prevalence", neg="negative", threshold=0.5)
+# Get the count of TRUE contaminant vs FALSE
+table(contamdf.prev$contaminant) 
+# Remove sequences identified as contaminant
+ps.noncontam = prune_taxa(!contamdf.prev$contaminant, ps) 
+ # Remove negative control samples
+ps_decontam=subset_samples(ps.noncontam, !negative=="TRUE")
+
+# ----------- Phylogenetic tree -----------
+# Extract sequences from phyloseq object
+asv_tab=as.data.frame(otu_table(ps_decontam))
+seqs = getSequences(t(asv_tab))
+names(seqs) = seqs
+# Aligning sequences
+seq_align = AlignSeqs(DNAStringSet(seqs), anchor=NA, processors=20)
+# Set path to save the aligned sequence fastq file  
+writeXStringSet(seq_align, file = "~/project/domain/raw_data/align.fasta",format="fasta")
+```
+
+# ----------- Generate tree using FastTree -----------  
+
+```{bash}
+# Change directory to the one containing the align.fasta file
+cd ~/project/domain/raw_data/
+# Execute fasttree algorithm on the align.fasta file and generate the file align_tree
+fasttree -nt -gtr  align.fasta > align_tree
+```
+
+# ----------- Root tree -----------
+
+```{r}
+# Load file align_tree
+Tree = ape::read.tree(file = "~/project/domain/raw_data/align.fasta")
+# Add midpoint to tree
+Tree.midpoint = phangorn::midpoint(Tree)
+
+# ----------- Add rooted tree to phyloseq objet -----------
+tree = phy_tree(Tree.midpoint)
+ps1 = merge_phyloseq(ps_decontam, tree)
+
+# ----------- Add DNA sequence -----------
+dna = Biostrings::DNAStringSet(taxa_names(ps_decontam))
+names(dna) = taxa_names(ps_decontam)
+ps1=merge_phyloseq(ps1, dna)
+
+# ----------- Shorten ASV name -----------
+taxa_names(ps1) = paste0("ASV", seq(ntaxa(ps1)))
+
+# ----------- Save tables -----------
+saving_path = "~/project/domain/int_data"
+
+write.csv(as.data.frame(as(tax_table(ps1), "matrix")), file = glue("{path}/raw_taxa.csv"))
+write.csv(as.data.frame(as(otu_table(ps1), "matrix")),file = glue("{path}/raw_asv.csv"))
+write.csv(as.data.frame(as(sample_data(ps1), "matrix")), file = glue("{path}/raw_meta.csv"))
+tree.raw = phy_tree(ps1)
+ape::write.tree(tree.raw , file = glue("{path}/raw_tree.tree"))
+ps1 %>% refseq() %>% Biostrings::writeXStringSet(glue("{path}/raw_refseq.fna"), append=FALSE,
+                                  compress=FALSE, compression_level=NA, format="fasta")
+```
+````
+
+## Forward reads only
+````{verbatim, lang="python"}
+```{r}
+# ----------- Load libraries -----------
+library(dada2)
+library(decontam)
+library(phyloseq)
+library(DECIPHER)
+library(phangorn)
+
+# ----------- Getting ready -----------
+path = path = "~/project/archaea/raw_data"
+fnFs = sort(list.files(file.path(path,"fasta"),pattern="_R1_001.fastq", full.names = TRUE))
+sample.names = sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+
+# ----------- Inspect quality -----------
+plotQualityProfile(fnFs, aggregate=TRUE)
+```
+
+⛔# Before executing the next chunk of code inspect the generated graph
+⛔# to determine which value to use with function "truncLen" 
+
+```{r}
+# ----------- Filter and trim ----------- 
+filtFs = file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+names(filtFs) = sample.names
+
+out = filterAndTrim(fnFs, filtFs, trimLeft = c(18), truncLen=c(210),
+                     maxN=0, maxEE=2 , truncQ=2,
+                     compress=TRUE, multithread=TRUE) 
+
+# ----------- Learn error rates ----------- 
+errF = learnErrors(filtFs, multithread=TRUE, randomize=TRUE)
+plotErrors(errF, nominalQ=TRUE)
+dadaFs = dada(filtFs, err=errF, multithread=TRUE)
+
+# ----------- Construct amplicon sequence variant table (ASV) ----------- 
+seqtab = makeSequenceTable(dadaFs)
+dim(seqtab)
+
+# ----------- Remove chimeras ----------- 
+seqtab.nochim = removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE)
+dim(seqtab.nochim)
+sum(seqtab.nochim)/sum(seqtab)
+
+# ----------- Track reads through pipeline ----------- 
+getN = function(x) sum(getUniques(x))
+track = cbind(out, sapply(dadaFs, getN), rowSums(seqtab.nochim))
+colnames(track) = c("input", "filtered", "denoisedF", "nonchim")
+rownames(track) = sample.names
+head(track)
+
+# ----------- Assign taxonomy  -----------
+taxa = assignTaxonomy(seqtab.nochim, "/home/16S_db/silva_nr99_v138.1_train_set.fa.gz", multithread=TRUE, tryRC=TRUE)
+
+# ----------- Reclassify with arc.cassandre -----------
+taxint = subset(taxa, is.na(phylum))
+taxide = subset(taxa, !(is.na(domain)))
+dim(taxint)
+
+seqtabint = as.data.frame(seqtab.nochim)
+seqtabint = seqtab.nochim[,colnames(seqtab.nochim) %in% rownames(taxint)]
+
+load("/home/16S_db/arc.cassandre.trainingset.RData") 
+dna = DNAStringSet(getSequences(seqtabint)) 
+ids = IdTaxa(dna, trainingSet, strand="both", processors=NULL, verbose=FALSE, threshold = 50)
+
+taxint = t(sapply(ids, function(x) {
+        m = match(ranks, x$rank)
+        taxa = x$taxon[m]
+        taxa[startsWith(taxa, "Unclassified_")] = NA
+        taxa
+}))
+colnames(taxint) = ranks; rownames(taxint) = getSequences(seqtabint)
+taxint=subset(as.data.frame(taxint), domain =="Archaea")
+taxide = taxide[!(rownames(taxide) %in% rownames(taxint)),]
+taxa = rbind(taxide, as.data.frame(taxint))
+
+# ----------- Add highest classified rank to unclassified -----------
+taxid = as.data.frame(t(taxa))
+taxid[] = lapply(taxid, as.character)
+taxid2= tidyr::fill(taxid, names(taxid),.direction = "down")
+taxid2= sapply(taxid2, function(x){paste0("Unclassified_", x)})
+taxid[is.na(taxid)] = taxid2[is.na(taxid)]
+taxid = t(taxid)
+taxid[ taxid == "Unclassified_NA" ] = NA
+
+taxid =subset(as.data.frame(taxid), domain =="Archaea")
+seqtab.nochim = seqtab.nochim[,colnames(seqtab.nochim) %in% rownames(taxid)]
+
+# ----------- Remove contaminants -----------
+meta = read.table("metadata.csv", sep=",", row.names=1, header=TRUE)
+ps = phyloseq(otu_table(t(seqtab.nochim), taxa_are_rows=TRUE), tax_table(as.matrix(taxid)), sample_data(meta))
+
+contamdf.prev = isContaminant(ps, method="prevalence", neg="negative", threshold=0.5)
+table(contamdf.prev$contaminant) # Get the count of TRUE contaminant vs FALSE
+ps.noncontam = prune_taxa(!contamdf.prev$contaminant, ps) # Remove sequences identified as contaminant
+ps_decontam=subset_samples(ps.noncontam, !negative=="TRUE") # Remove negative control samples
+
+# ----------- Phylogenetic tree -----------
+asv_tab=as.data.frame(otu_table(ps_decontam))
+seqs = getSequences(t(asv_tab))
+names(seqs) = seqs
+seq_align = AlignSeqs(DNAStringSet(seqs), anchor=NA, processors=20)
+path="combined_fastq"
+writeXStringSet(seq_align, file = file.path(path,"align.fasta"),format="fasta")
+```
+
+# ----------- Generate tree using FastTree -----------  
+
+```{bash}
+# Change directory to the one containing the align.fasta file
+cd ~/project/archaea/raw_data/combined_fastq
+fasttree -nt -gtr  align.fasta > align_tree
+``` 
+
+# ----------- Root tree -----------
+
+```{r}
+Tree = ape::read.tree(file.path(path,"tree"))
+Tree.midpoint = phangorn::midpoint(Tree)
+ape::write.tree(Tree.midpoint,file = file.path(path,"tree.midpoint"))
+
+# ----------- Add rooted tree to phyloseq objet -----------
+tree = phy_tree(Tree.midpoint)
+ps1 = merge_phyloseq(ps_decontam, tree)
+
+# ----------- Add DNA sequence -----------
+dna = Biostrings::DNAStringSet(taxa_names(ps_decontam))
+names(dna) = taxa_names(ps_decontam)
+ps1=merge_phyloseq(ps1, dna)
+
+
+# ----------- Shorten ASV name -----------
+taxa_names(ps1) = paste0("ASV", seq(ntaxa(ps1)))
+
+# ----------- Save tables -----------
+saving_path = "~/project/archaea/int_data"
+
+write.csv(as.data.frame(as(tax_table(ps1), "matrix")), file = glue("{path}/raw_taxa.csv"))
+write.csv(as.data.frame(as(otu_table(ps1), "matrix")),file = glue("{path}/raw_asv.csv"))
+write.csv(as.data.frame(as(sample_data(ps1), "matrix")), file = glue("{path}/raw_meta.csv"))
+tree.raw = phy_tree(ps1)
+ape::write.tree(tree.raw , file = glue("{path}/raw_tree.tree"))
+ps1 %>% refseq() %>% Biostrings::writeXStringSet(glue("{path}/raw_refseq.fna"), append=FALSE,
+                                  compress=FALSE, compression_level=NA, format="fasta")
+
+```
+````
+

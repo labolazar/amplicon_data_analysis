@@ -1,0 +1,77 @@
+# PCoA 
+
+Load package and set-up directory 
+```{r, eval = FALSE}
+knitr::opts_knit$set(root.dir = "~/16S_Project/chap_1_feast/DADA2_output/")
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(ggpubr)
+library(ggrepel)
+library(glue)
+library(cluster)
+library(dplyr)
+library(scales)
+``` 
+
+For this analysis we are using the same files used previously for the stacked taxonomy bar charts. 
+
+```{r, eval = FALSE}
+path="~/projet/domain/int_data"
+
+asv = read.table(file = glue("{path}/rarefied_asv.csv"), sep=",", row.names=1, header=TRUE, check.names=FALSE) 
+taxa = read.table(file = glue("{path}/rarefied_taxa.csv"), sep=",", row.names=1, header=TRUE) 
+meta = read.table(file = glue("{path}/raw_meta.csv"), sep=",", row.names=1, header=TRUE) 
+``` 
+
+The first step is to apply the Hellinger data transformation on our ASV count matrix. The Hellinger standardization is a convex standardization that simultaneously helps minimize effects of vastly different sample total abundances. 
+
+```{r, eval = FALSE}
+asv_hellinger=decostand(asv, method="hellinger")
+```
+
+In case you want to use some numerical characteristics from you metadata table you'll want to transform there as factor before proceeding. For examepe, here I want to use the pore-size of my filter to distinguisgh the samples on my PCoA. Because those values are numerical, by default R will treat them as such and will display them as a gradient. To avoid this I will use the following command to transform those values from numerical to factor : 
+
+```{r, eval = FALSE}
+meta$Filter=factor(meta$Filter, levels = c("1", "2"))
+```
+
+Merge into phyloseq object 
+```{r, eval = FALSE}
+ps=phyloseq(otu_table(asv_hellinger, taxa_are_rows=TRUE), tax_table(as.matrix(taxa)), sample_data(meta2))
+```
+
+Ordination
+```{r, eval = FALSE}
+
+# Calculate distance matrix 
+dist=vegdist(t(asv_hellinger), method="bray")
+
+# Ordinate distance matrix 
+PCOA = cmdscale(dist, eig=TRUE, add=TRUE) # set eig to TRUE to get % of variance for each axis and correct negative eig values with add=TRUE
+position=PCOA$points # Extract point position 
+colnames(position)=c("Axis.1", "Axis.2") # Change column name 
+
+percent_explained=100*PCOA$eig/sum(PCOA$eig) # get percentage of variation explained by each axis 
+reduced_percent=format(round(percent_explained[1:2], digits=2), nsmall=1, trim=TRUE) # reduce number of digits
+
+# Generate pretty labels for plot 
+pretty_labs=c(glue("Axis 1 ({reduced_percent[1]}%)"), glue("Axis 2 ({reduced_percent[2]}%)")) # modify the percentage (only 2 digits after comma and show at least one digit)
+
+df=merge(position, meta, by=0) # combine PCOA results with metadata 
+
+```
+
+Plot ordination
+
+```{r, eval = FALSE}
+plot=ggplot(df, aes(x=Axis.1, y=Axis.2, color=Well, shape=Filter, label=Sample)) + 
+  theme_light() +
+  geom_point(size=2) + 
+  geom_text(hjust = 0, nudge_x = 0.01, show.legend = FALSE) + 
+  labs(x=pretty_labs[1], y=pretty_labs[2], color="Well", shape="Filter", title="PCoA") + 
+  theme(text = element_text(size=8), 
+        plot.title=element_text(hjust=0.5, size=8)) + 
+  scale_y_continuous(limits=c(-0.50,0.50)) +
+  scale_x_continuous(limits=c(-0.5,0.5)) 
+``` 

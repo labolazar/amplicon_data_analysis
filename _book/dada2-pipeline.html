@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 3 DADA2 pipeline | Example workflow of amplicon sequence data analysis</title>
+  <meta name="description" content="Chapter 3 DADA2 pipeline | Example workflow of amplicon sequence data analysis" />
+  <meta name="generator" content="bookdown 0.35 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 3 DADA2 pipeline | Example workflow of amplicon sequence data analysis" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 3 DADA2 pipeline | Example workflow of amplicon sequence data analysis" />
+  
+  
+  
+
+<meta name="author" content="Karine Villeneuve" />
+
+
+<meta name="date" content="2023-11-20" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="basic-r-markdown.html"/>
+<link rel="next" href="rarefaction.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+<link rel="stylesheet" href="toc.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Workflow for amplicon sequence analysis</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#setting-up-your-environment"><i class="fa fa-check"></i><b>1.1</b> Setting up your environment</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#download-fastqs-files-from-illumina-basespace-sequence-hub"><i class="fa fa-check"></i><b>1.2</b> Download fastqs files from Illumina BaseSpace Sequence Hub</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="basic-r-markdown.html"><a href="basic-r-markdown.html"><i class="fa fa-check"></i><b>2</b> Basic R Markdown</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="basic-r-markdown.html"><a href="basic-r-markdown.html#introduction-à-rstudio-et-rmarkdown"><i class="fa fa-check"></i><b>2.1</b> Introduction à Rstudio et Rmarkdown</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="basic-r-markdown.html"><a href="basic-r-markdown.html#bloc-de-codes"><i class="fa fa-check"></i><b>2.1.1</b> Bloc de codes</a></li>
+<li class="chapter" data-level="2.1.2" data-path="basic-r-markdown.html"><a href="basic-r-markdown.html#commandes-de-bases"><i class="fa fa-check"></i><b>2.1.2</b> Commandes de bases</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html"><i class="fa fa-check"></i><b>3</b> DADA2 pipeline</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#general-workflow"><i class="fa fa-check"></i><b>3.1</b> General workflow</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#getting-ready"><i class="fa fa-check"></i><b>3.1.1</b> Getting ready</a></li>
+<li class="chapter" data-level="3.1.2" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#inspect-quality"><i class="fa fa-check"></i><b>3.1.2</b> Inspect quality</a></li>
+<li class="chapter" data-level="3.1.3" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#filter-and-trim-sequences"><i class="fa fa-check"></i><b>3.1.3</b> Filter and trim sequences</a></li>
+<li class="chapter" data-level="3.1.4" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#learn-error-rates"><i class="fa fa-check"></i><b>3.1.4</b> Learn error rates</a></li>
+<li class="chapter" data-level="3.1.5" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#merge-paired-reads"><i class="fa fa-check"></i><b>3.1.5</b> Merge paired reads</a></li>
+<li class="chapter" data-level="3.1.6" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#track-reads-through-pipeline"><i class="fa fa-check"></i><b>3.1.6</b> Track reads through pipeline</a></li>
+<li class="chapter" data-level="3.1.7" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#classify-sequences"><i class="fa fa-check"></i><b>3.1.7</b> Classify sequences</a></li>
+<li class="chapter" data-level="3.1.8" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#add-highest-identified-taxonomic-rank-to-unclassified-ranks"><i class="fa fa-check"></i><b>3.1.8</b> Add highest identified taxonomic rank to unclassified ranks</a></li>
+<li class="chapter" data-level="3.1.9" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#removing-contaminants"><i class="fa fa-check"></i><b>3.1.9</b> Removing contaminants</a></li>
+<li class="chapter" data-level="3.1.10" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#generate-a-phylogenetic-tree"><i class="fa fa-check"></i><b>3.1.10</b> Generate a phylogenetic tree</a></li>
+<li class="chapter" data-level="3.1.11" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#add-dna-sequences"><i class="fa fa-check"></i><b>3.1.11</b> Add DNA sequences</a></li>
+<li class="chapter" data-level="3.1.12" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#shorten-asv-name"><i class="fa fa-check"></i><b>3.1.12</b> Shorten ASV name</a></li>
+<li class="chapter" data-level="3.1.13" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#save-tables"><i class="fa fa-check"></i><b>3.1.13</b> Save tables</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#complete-code"><i class="fa fa-check"></i><b>3.2</b> Complete code</a></li>
+<li class="chapter" data-level="3.3" data-path="dada2-pipeline.html"><a href="dada2-pipeline.html#forward-reads-only"><i class="fa fa-check"></i><b>3.3</b> Forward reads only</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="rarefaction.html"><a href="rarefaction.html"><i class="fa fa-check"></i><b>4</b> Rarefaction</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="rarefaction.html"><a href="rarefaction.html#load-required-libraries"><i class="fa fa-check"></i><b>4.1</b> Load required libraries</a></li>
+<li class="chapter" data-level="4.2" data-path="rarefaction.html"><a href="rarefaction.html#getting-ready-1"><i class="fa fa-check"></i><b>4.2</b> Getting ready</a></li>
+<li class="chapter" data-level="4.3" data-path="rarefaction.html"><a href="rarefaction.html#filter-low-abundant-taxa"><i class="fa fa-check"></i><b>4.3</b> Filter low abundant taxa</a></li>
+<li class="chapter" data-level="4.4" data-path="rarefaction.html"><a href="rarefaction.html#generate-rarefaction-curve"><i class="fa fa-check"></i><b>4.4</b> Generate rarefaction curve</a></li>
+<li class="chapter" data-level="4.5" data-path="rarefaction.html"><a href="rarefaction.html#customizing-the-graph"><i class="fa fa-check"></i><b>4.5</b> Customizing the graph</a></li>
+<li class="chapter" data-level="4.6" data-path="rarefaction.html"><a href="rarefaction.html#comparing-richness-and-diversity-between-rarefied-and-un-rarefied-samples"><i class="fa fa-check"></i><b>4.6</b> Comparing richness and diversity between rarefied and un-rarefied samples</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html"><i class="fa fa-check"></i><b>5</b> Stacked taxonomy bar graphs</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#required-libraries"><i class="fa fa-check"></i><b>5.1</b> Required libraries</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#installing-libraries"><i class="fa fa-check"></i><b>5.1.1</b> Installing libraries</a></li>
+<li class="chapter" data-level="5.1.2" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#loading-the-libraries"><i class="fa fa-check"></i><b>5.1.2</b> Loading the libraries</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#required-files"><i class="fa fa-check"></i><b>5.2</b> Required files</a></li>
+<li class="chapter" data-level="5.3" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#defining-taxonomic-rank"><i class="fa fa-check"></i><b>5.3</b> Defining taxonomic rank</a></li>
+<li class="chapter" data-level="5.4" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#prepping-the-metadata-table"><i class="fa fa-check"></i><b>5.4</b> Prepping the metadata table</a></li>
+<li class="chapter" data-level="5.5" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#combine-and-melt-dataframes"><i class="fa fa-check"></i><b>5.5</b> Combine and melt dataframes</a></li>
+<li class="chapter" data-level="5.6" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#identify-most-abundant-taxa"><i class="fa fa-check"></i><b>5.6</b> Identify most abundant taxa</a></li>
+<li class="chapter" data-level="5.7" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#assign-color-and-italicize-taxa"><i class="fa fa-check"></i><b>5.7</b> Assign color and italicize taxa</a></li>
+<li class="chapter" data-level="5.8" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#saving-and-loading-color-range"><i class="fa fa-check"></i><b>5.8</b> Saving and loading color range</a></li>
+<li class="chapter" data-level="5.9" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#plotting-your-figures"><i class="fa fa-check"></i><b>5.9</b> Plotting your figures</a></li>
+<li class="chapter" data-level="5.10" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#export-tables"><i class="fa fa-check"></i><b>5.10</b> Export tables</a></li>
+<li class="chapter" data-level="5.11" data-path="stacked-taxonomy-bar-graphs.html"><a href="stacked-taxonomy-bar-graphs.html#complete-code-1"><i class="fa fa-check"></i><b>5.11</b> Complete code</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="pcoa.html"><a href="pcoa.html"><i class="fa fa-check"></i><b>6</b> PCoA</a></li>
+<li class="chapter" data-level="7" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>7</b> Final Words</a></li>
+<li class="chapter" data-level="8" data-path="remote-login.html"><a href="remote-login.html"><i class="fa fa-check"></i><b>8</b> Remote login</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="remote-login.html"><a href="remote-login.html#rstudio-server"><i class="fa fa-check"></i><b>8.1</b> RStudio Server</a></li>
+<li class="chapter" data-level="8.2" data-path="remote-login.html"><a href="remote-login.html#terminal"><i class="fa fa-check"></i><b>8.2</b> Terminal</a></li>
+<li class="chapter" data-level="8.3" data-path="remote-login.html"><a href="remote-login.html#usefull-applications-and-tools"><i class="fa fa-check"></i><b>8.3</b> Usefull applications and tools</a></li>
+<li class="chapter" data-level="8.4" data-path="remote-login.html"><a href="remote-login.html#r-markdown"><i class="fa fa-check"></i><b>8.4</b> R Markdown</a></li>
+<li class="chapter" data-level="8.5" data-path="remote-login.html"><a href="remote-login.html#including-plots"><i class="fa fa-check"></i><b>8.5</b> Including Plots</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Example workflow of amplicon sequence data analysis</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="dada2-pipeline" class="section level1 hasAnchor" number="3">
+<h1><span class="header-section-number">Chapter 3</span> DADA2 pipeline<a href="dada2-pipeline.html#dada2-pipeline" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<!-- Chunk to allow horizontal scroll in chunks rather than wrap text  -->
+<style type="text/css">
+pre, code {white-space:pre !important; overflow-x:auto}
+</style>
+<p>This general workflow presents the typical commands used to process amplicon sequencing data. Please note that for some steps the commands will vary based on which Kingdom (Bacteria, Archaea or Eukaryote) the data being processed belongs to.</p>
+<p>The first section (<a href="dada2-pipeline.html#general-workflow">General workflow</a>) generally describes and breakdowns each steps of the analysis. In the second section (<a href="dada2-pipeline.html#complete-code">Complete code</a>) the reader will find a single chunk of code which she/he can copy-paste into a new rmarkdown document and execute each chunk of code. Finally, the third section (<a href="dada2-pipeline.html#forward-reads-only">Forward reads only</a>) also contains a single chunk of code to use only with archaeal sequences when the quality of the reverse read for is of too poor quality to allow the merging of forward and reverse read and thus only the forward reads are processed.</p>
+<div id="general-workflow" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> General workflow<a href="dada2-pipeline.html#general-workflow" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="getting-ready" class="section level3 hasAnchor" number="3.1.1">
+<h3><span class="header-section-number">3.1.1</span> Getting ready<a href="dada2-pipeline.html#getting-ready" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Load required libraries</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="dada2-pipeline.html#cb1-1" tabindex="-1"></a><span class="fu">library</span>(dada2)</span>
+<span id="cb1-2"><a href="dada2-pipeline.html#cb1-2" tabindex="-1"></a><span class="fu">library</span>(decontam)</span>
+<span id="cb1-3"><a href="dada2-pipeline.html#cb1-3" tabindex="-1"></a><span class="fu">library</span>(phyloseq)</span>
+<span id="cb1-4"><a href="dada2-pipeline.html#cb1-4" tabindex="-1"></a><span class="fu">library</span>(DECIPHER)</span>
+<span id="cb1-5"><a href="dada2-pipeline.html#cb1-5" tabindex="-1"></a><span class="fu">library</span>(phangorn)</span></code></pre></div>
+<p>The first step is to define where the fastq files are located. <strong>Please Modify this path accordingly</strong>. For more information on how to organize your files and folders on your server please see section <a href="index.html#setting-up-your-environment">Setting up your environment</a>.
+To validate that we are in the correct folder we then use the command <code>list.files</code> to print out all files contained in the folder previously defined.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="dada2-pipeline.html#cb2-1" tabindex="-1"></a>path <span class="ot">=</span> <span class="st">&quot;~/project/domain/raw_data&quot;</span></span>
+<span id="cb2-2"><a href="dada2-pipeline.html#cb2-2" tabindex="-1"></a><span class="fu">list.files</span>(path)</span></code></pre></div>
+<p>We then extract each sample name from the forward and reverse fastq files using some string manipulation assuming the name of our files respect the following format :</p>
+<ul>
+<li>Forward reads : <code>sample-name_domain_xxx_L001_R1_001.fastq</code></li>
+<li>Reverse reads : <code>sample-name_domain_xxx_L001_R2_001.fastq</code></li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="dada2-pipeline.html#cb3-1" tabindex="-1"></a>fnFs <span class="ot">=</span> <span class="fu">sort</span>(<span class="fu">list.files</span>(path, <span class="at">pattern=</span><span class="st">&quot;_R1_001.fastq&quot;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)) </span>
+<span id="cb3-2"><a href="dada2-pipeline.html#cb3-2" tabindex="-1"></a>fnRs <span class="ot">=</span> <span class="fu">sort</span>(<span class="fu">list.files</span>(path, <span class="at">pattern=</span><span class="st">&quot;_R2_001.fastq&quot;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb3-3"><a href="dada2-pipeline.html#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="dada2-pipeline.html#cb3-4" tabindex="-1"></a>sample.names <span class="ot">=</span> <span class="fu">sapply</span>(<span class="fu">strsplit</span>(<span class="fu">basename</span>(fnFs), <span class="st">&quot;_&quot;</span>), <span class="st">`</span><span class="at">[</span><span class="st">`</span>, <span class="dv">1</span>)</span></code></pre></div>
+</div>
+<div id="inspect-quality" class="section level3 hasAnchor" number="3.1.2">
+<h3><span class="header-section-number">3.1.2</span> Inspect quality<a href="dada2-pipeline.html#inspect-quality" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>In order to inspect the read quality profiles we use the command <code>plotQualityProfile</code> to plot a visual summary of the distribution of quality scores as a function of sequence position for the input fastq file.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="dada2-pipeline.html#cb4-1" tabindex="-1"></a><span class="fu">plotQualityProfile</span>(fnFs, <span class="at">aggregate=</span><span class="cn">TRUE</span>)</span>
+<span id="cb4-2"><a href="dada2-pipeline.html#cb4-2" tabindex="-1"></a><span class="fu">plotQualityProfile</span>(fnRs, <span class="at">aggregate=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>In gray-scale is a heat map of the frequency of each quality score at each base position. The mean quality score at each position is shown by the green line, and the quartiles of the quality score distribution by the orange lines. The red line shows the scaled proportion of reads that extend to at least that position (this is more useful for other sequencing technologies, as Illumina reads are typically all the same length, hence the flat red line). The reverse reads are generally of significantly worse quality, especially at the end, which is common in Illumina sequencing.</p>
+</div>
+<div id="filter-and-trim-sequences" class="section level3 hasAnchor" number="3.1.3">
+<h3><span class="header-section-number">3.1.3</span> Filter and trim sequences<a href="dada2-pipeline.html#filter-and-trim-sequences" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Before trimming we assign the filenames for the filtered fastq.gz files and place filtered files in the created <code>filtered</code> subdirectory.</p>
+<p>The command <code>trimleft</code> is used to remove the primers (based on primer length) and <code>truncLen</code>to trim the reads based on where the average quality begins to crash on the previously generated graphs. Nucleotides after the specified position will be removed.</p>
+<p><strong>For Bacterias</strong></p>
+<ul>
+<li>Lenght of primer B341F (CCT ACG GGA GGC AGC AG) : 18 nucleotides</li>
+<li>Lenght of primer B785R (GAC TAC HVG GGT ATC TAA TCC): 21 nucleotides</li>
+</ul>
+<p><strong>For Archaea</strong></p>
+<ul>
+<li>Lenght of primer A340F (CCC TAC GGG GYG CAS CAG) : 18 nucleotides</li>
+<li>Lenght of primer A915R (GTG CTC CCC CGC CAA TTC CT) : 20 nucleotides</li>
+</ul>
+<p><strong>For Eukaryotes</strong></p>
+<ul>
+<li>Lenght of primer E960F (GGC TTA ATT TGA CTC AAC RCG) : 21 nucleotides</li>
+<li>Lenght of primer NSR1438R (GGC TTA ATT TGA CTC AAC RCG) : 21 nucleotides</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="dada2-pipeline.html#cb5-1" tabindex="-1"></a>filtFs <span class="ot">=</span> <span class="fu">file.path</span>(path, <span class="st">&quot;filtered&quot;</span>, <span class="fu">paste0</span>(sample.names, <span class="st">&quot;_F_filt.fastq.gz&quot;</span>))</span>
+<span id="cb5-2"><a href="dada2-pipeline.html#cb5-2" tabindex="-1"></a>filtRs <span class="ot">=</span> <span class="fu">file.path</span>(path, <span class="st">&quot;filtered&quot;</span>, <span class="fu">paste0</span>(sample.names, <span class="st">&quot;_R_filt.fastq.gz&quot;</span>))</span>
+<span id="cb5-3"><a href="dada2-pipeline.html#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="dada2-pipeline.html#cb5-4" tabindex="-1"></a><span class="fu">names</span>(filtFs) <span class="ot">=</span> sample.names</span>
+<span id="cb5-5"><a href="dada2-pipeline.html#cb5-5" tabindex="-1"></a><span class="fu">names</span>(filtRs) <span class="ot">=</span> sample.names</span>
+<span id="cb5-6"><a href="dada2-pipeline.html#cb5-6" tabindex="-1"></a><span class="co"># For Bacteria </span></span>
+<span id="cb5-7"><a href="dada2-pipeline.html#cb5-7" tabindex="-1"></a>out <span class="ot">=</span> <span class="fu">filterAndTrim</span>(fnFs, filtFs, fnRs, filtRs, <span class="at">trimLeft =</span> <span class="fu">c</span>(<span class="dv">18</span>,<span class="dv">21</span>), <span class="at">truncLen=</span><span class="fu">c</span>(<span class="dv">280</span>,<span class="dv">240</span>),</span>
+<span id="cb5-8"><a href="dada2-pipeline.html#cb5-8" tabindex="-1"></a>                     <span class="at">maxN=</span><span class="dv">0</span>, <span class="at">maxEE=</span><span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>), <span class="at">truncQ=</span><span class="dv">2</span>,<span class="at">rm.phix=</span><span class="cn">TRUE</span>, </span>
+<span id="cb5-9"><a href="dada2-pipeline.html#cb5-9" tabindex="-1"></a>                     <span class="at">compress=</span><span class="cn">TRUE</span>, <span class="at">multithread=</span><span class="cn">TRUE</span>) </span>
+<span id="cb5-10"><a href="dada2-pipeline.html#cb5-10" tabindex="-1"></a><span class="co"># For Archaea </span></span>
+<span id="cb5-11"><a href="dada2-pipeline.html#cb5-11" tabindex="-1"></a>out <span class="ot">=</span> <span class="fu">filterAndTrim</span>(fnFs, filtFs, fnRs, filtRs, <span class="at">trimLeft =</span> <span class="fu">c</span>(<span class="dv">18</span>,<span class="dv">20</span>), <span class="at">truncLen=</span><span class="fu">c</span>(<span class="dv">280</span>,<span class="dv">240</span>),</span>
+<span id="cb5-12"><a href="dada2-pipeline.html#cb5-12" tabindex="-1"></a>                     <span class="at">maxN=</span><span class="dv">0</span>, <span class="at">maxEE=</span><span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>), <span class="at">truncQ=</span><span class="dv">2</span>,<span class="at">rm.phix=</span><span class="cn">TRUE</span>, </span>
+<span id="cb5-13"><a href="dada2-pipeline.html#cb5-13" tabindex="-1"></a>                     <span class="at">compress=</span><span class="cn">TRUE</span>, <span class="at">multithread=</span><span class="cn">TRUE</span>) </span>
+<span id="cb5-14"><a href="dada2-pipeline.html#cb5-14" tabindex="-1"></a><span class="co"># For Eukaryotes </span></span>
+<span id="cb5-15"><a href="dada2-pipeline.html#cb5-15" tabindex="-1"></a>out <span class="ot">=</span> <span class="fu">filterAndTrim</span>(fnFs, filtFs, fnRs, filtRs, <span class="at">trimLeft =</span> <span class="fu">c</span>(<span class="dv">21</span>,<span class="dv">21</span>), <span class="at">truncLen=</span><span class="fu">c</span>(<span class="dv">280</span>,<span class="dv">240</span>),</span>
+<span id="cb5-16"><a href="dada2-pipeline.html#cb5-16" tabindex="-1"></a>                     <span class="at">maxN=</span><span class="dv">0</span>, <span class="at">maxEE=</span><span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>), <span class="at">truncQ=</span><span class="dv">2</span>,<span class="at">rm.phix=</span><span class="cn">TRUE</span>, </span>
+<span id="cb5-17"><a href="dada2-pipeline.html#cb5-17" tabindex="-1"></a>                     <span class="at">compress=</span><span class="cn">TRUE</span>, <span class="at">multithread=</span><span class="cn">TRUE</span>) </span></code></pre></div>
+</div>
+<div id="learn-error-rates" class="section level3 hasAnchor" number="3.1.4">
+<h3><span class="header-section-number">3.1.4</span> Learn error rates<a href="dada2-pipeline.html#learn-error-rates" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The DADA2 algorithm makes use of a parametric error model (err) and every amplicon dataset has a different set of error rates. The <code>learnErrors</code> method learns this error model from the data, by alternating estimation of the error rates and inference of sample composition until they converge on a jointly consistent solution. As in many machine-learning problems, the algorithm must begin with an initial guess, for which the maximum possible error rates in this data are used (the error rates if only the most abundant sequence is correct and all the rest are errors).</p>
+<p><strong>Please note</strong> that for some reason <code>multithread=TRUE</code> causes problem for users on a Microsoft Windows operating system and should therefore set this parameter to FALSE. Such modification should be made for all other instances where parameter <code>multithread</code> is specified</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="dada2-pipeline.html#cb6-1" tabindex="-1"></a><span class="co"># Learn error rates for forward and reverse reads</span></span>
+<span id="cb6-2"><a href="dada2-pipeline.html#cb6-2" tabindex="-1"></a>errF <span class="ot">=</span> <span class="fu">learnErrors</span>(filtFs, <span class="at">multithread=</span><span class="cn">TRUE</span>, <span class="at">randomize=</span><span class="cn">TRUE</span>)</span>
+<span id="cb6-3"><a href="dada2-pipeline.html#cb6-3" tabindex="-1"></a>errR <span class="ot">=</span> <span class="fu">learnErrors</span>(filtRs, <span class="at">multithread=</span><span class="cn">TRUE</span>, <span class="at">randomize=</span><span class="cn">TRUE</span>)</span>
+<span id="cb6-4"><a href="dada2-pipeline.html#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="dada2-pipeline.html#cb6-5" tabindex="-1"></a><span class="co"># visualize the estimated error rates, as a sanity check if nothing else</span></span>
+<span id="cb6-6"><a href="dada2-pipeline.html#cb6-6" tabindex="-1"></a><span class="fu">plotErrors</span>(errF, <span class="at">nominalQ=</span><span class="cn">TRUE</span>)</span>
+<span id="cb6-7"><a href="dada2-pipeline.html#cb6-7" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="dada2-pipeline.html#cb6-8" tabindex="-1"></a><span class="co"># Apply the core sample inference algorithm to the filtered and trimmed sequence data</span></span>
+<span id="cb6-9"><a href="dada2-pipeline.html#cb6-9" tabindex="-1"></a>dadaFs <span class="ot">=</span> <span class="fu">dada</span>(filtFs, <span class="at">err=</span>errF, <span class="at">pool =</span> <span class="st">&quot;pseudo&quot;</span>, <span class="at">multithread=</span><span class="cn">TRUE</span>)</span>
+<span id="cb6-10"><a href="dada2-pipeline.html#cb6-10" tabindex="-1"></a>dadaRs <span class="ot">=</span> <span class="fu">dada</span>(filtRs, <span class="at">err=</span>errR, <span class="at">pool =</span> <span class="st">&quot;pseudo&quot;</span>, <span class="at">multithread=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+<div id="merge-paired-reads" class="section level3 hasAnchor" number="3.1.5">
+<h3><span class="header-section-number">3.1.5</span> Merge paired reads<a href="dada2-pipeline.html#merge-paired-reads" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We can now merge the forward and reverse reads together to obtain the full denoised sequences. Merging is performed by aligning the denoised forward reads with the reverse-complement of the corresponding denoised reverse reads, and then constructing the merged “contig” sequences. By default, merged sequences are only output if the forward and reverse reads overlap by at least 12 bases, and are identical to each other in the overlap region (but these conditions can be changed via function arguments).</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="dada2-pipeline.html#cb7-1" tabindex="-1"></a><span class="co"># Merging the paired reads</span></span>
+<span id="cb7-2"><a href="dada2-pipeline.html#cb7-2" tabindex="-1"></a>mergers <span class="ot">=</span> <span class="fu">mergePairs</span>(dadaFs, filtFs, dadaRs, filtRs)</span>
+<span id="cb7-3"><a href="dada2-pipeline.html#cb7-3" tabindex="-1"></a><span class="co"># Construct an amplicon sequence variant table (ASV) table (a higher-resolution version of the OTU table produced by traditional methods)</span></span>
+<span id="cb7-4"><a href="dada2-pipeline.html#cb7-4" tabindex="-1"></a>seqtab <span class="ot">=</span> <span class="fu">makeSequenceTable</span>(mergers)</span>
+<span id="cb7-5"><a href="dada2-pipeline.html#cb7-5" tabindex="-1"></a><span class="co">#View dimension of your matrices </span></span>
+<span id="cb7-6"><a href="dada2-pipeline.html#cb7-6" tabindex="-1"></a><span class="fu">dim</span>(seqtab)</span>
+<span id="cb7-7"><a href="dada2-pipeline.html#cb7-7" tabindex="-1"></a><span class="co"># Inspect distribution of sequence lengths</span></span>
+<span id="cb7-8"><a href="dada2-pipeline.html#cb7-8" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">nchar</span>(<span class="fu">getSequences</span>(seqtab)))</span></code></pre></div>
+<div id="remove-chimeras" class="section level4 hasAnchor" number="3.1.5.1">
+<h4><span class="header-section-number">3.1.5.1</span> Remove chimeras<a href="dada2-pipeline.html#remove-chimeras" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Removing chimeras with the function <code>removeBimeraDenovo</code>. The core dada method corrects substitution and indel errors, but chimeras remain. Fortunately, the accuracy of sequence variants after denoising makes identifying chimeric ASVs simpler than when dealing with fuzzy OTUs. Chimeric sequences are identified if they can be exactly reconstructed by combining a left-segment and a right-segment from two more abundant “parent” sequences.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="dada2-pipeline.html#cb8-1" tabindex="-1"></a><span class="co"># Remove chimeras</span></span>
+<span id="cb8-2"><a href="dada2-pipeline.html#cb8-2" tabindex="-1"></a>seqtab.nochim <span class="ot">=</span> <span class="fu">removeBimeraDenovo</span>(seqtab, <span class="at">method=</span><span class="st">&quot;consensus&quot;</span>, <span class="at">multithread=</span><span class="cn">TRUE</span>)</span>
+<span id="cb8-3"><a href="dada2-pipeline.html#cb8-3" tabindex="-1"></a><span class="co">#View dimension of your matrices and proportion of non-chimeric sequences</span></span>
+<span id="cb8-4"><a href="dada2-pipeline.html#cb8-4" tabindex="-1"></a><span class="fu">dim</span>(seqtab.nochim)</span>
+<span id="cb8-5"><a href="dada2-pipeline.html#cb8-5" tabindex="-1"></a><span class="fu">sum</span>(seqtab.nochim)<span class="sc">/</span><span class="fu">sum</span>(seqtab)</span></code></pre></div>
+</div>
+</div>
+<div id="track-reads-through-pipeline" class="section level3 hasAnchor" number="3.1.6">
+<h3><span class="header-section-number">3.1.6</span> Track reads through pipeline<a href="dada2-pipeline.html#track-reads-through-pipeline" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>As a final check of our progress, we’ll look at the number of reads that made it through each step in the pipeline with the following commands. This is a great place to do a last sanity check. Outside of filtering, there should be no step in which a majority of reads are lost. If a majority of reads failed to merge, you may need to revisit the <code>truncLen</code> parameter used in the filtering step and make sure that the truncated reads span your amplicon. If a majority of reads were removed as chimeric, you may need to revisit the removal of primers, as the ambiguous nucleotides in unremoved primers interfere with chimera identification.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="dada2-pipeline.html#cb9-1" tabindex="-1"></a>getN <span class="ot">=</span> <span class="cf">function</span>(x) <span class="fu">sum</span>(<span class="fu">getUniques</span>(x))</span>
+<span id="cb9-2"><a href="dada2-pipeline.html#cb9-2" tabindex="-1"></a>track <span class="ot">=</span> <span class="fu">cbind</span>(out, <span class="fu">sapply</span>(dadaFs, getN), <span class="fu">sapply</span>(dadaRs, getN), <span class="fu">sapply</span>(mergers, getN), <span class="fu">rowSums</span>(seqtab.nochim))</span>
+<span id="cb9-3"><a href="dada2-pipeline.html#cb9-3" tabindex="-1"></a><span class="fu">colnames</span>(track) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;input&quot;</span>, <span class="st">&quot;filtered&quot;</span>, <span class="st">&quot;denoisedF&quot;</span>, <span class="st">&quot;denoisedR&quot;</span>, <span class="st">&quot;merged&quot;</span>, <span class="st">&quot;nonchim&quot;</span>)</span>
+<span id="cb9-4"><a href="dada2-pipeline.html#cb9-4" tabindex="-1"></a><span class="fu">rownames</span>(track) <span class="ot">=</span> sample.names</span>
+<span id="cb9-5"><a href="dada2-pipeline.html#cb9-5" tabindex="-1"></a>track</span></code></pre></div>
+</div>
+<div id="classify-sequences" class="section level3 hasAnchor" number="3.1.7">
+<h3><span class="header-section-number">3.1.7</span> Classify sequences<a href="dada2-pipeline.html#classify-sequences" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The DADA2 package provides a native implementation of the <a href="https://pubmed.ncbi.nlm.nih.gov/17586664/">naïve Bayesian classifier method</a> to assign taxonomy to the sequence variants. The <code>assignTaxonomy</code> function takes as input a set of sequences to be classified and a training set of reference sequences with known taxonomy, and outputs taxonomic assignments. The DADA2 team maintains <a href="https://benjjneb.github.io/dada2/training.html">DADA2-formatted reference fastas</a> for the three most common 16S databases (Silva, RDP and GreenGenes) as well as additional trainings fastas suitable for protists and certain contributed specific environments</p>
+<p>The minimum bootstrap confidence for assigning a taxonomic level.</p>
+<p><strong>Database for Procaryotes</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="dada2-pipeline.html#cb10-1" tabindex="-1"></a>taxa <span class="ot">=</span> <span class="fu">assignTaxonomy</span>(seqtab.nochim, <span class="st">&quot;/home/16S_db/silva_nr99_v138.1_train_set.fa.gz&quot;</span>, <span class="at">multithread=</span><span class="cn">TRUE</span>, <span class="at">tryRC=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p><strong>Further classification for Archaeas</strong></p>
+<p>The same silva database is used for the classification of Bacterias and Archaeas but we also use a custom database to further classify sequences which failed initial classification for Archaeas. For this we use the function <code>IdTaxa</code> from the <a href="http://www2.decipher.codes/">DECIPHER</a> package.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="dada2-pipeline.html#cb11-1" tabindex="-1"></a><span class="co"># Extract sequences not identified to the phylum and domain</span></span>
+<span id="cb11-2"><a href="dada2-pipeline.html#cb11-2" tabindex="-1"></a>taxint <span class="ot">=</span> <span class="fu">subset</span>(taxa, <span class="fu">is.na</span>(phylum))</span>
+<span id="cb11-3"><a href="dada2-pipeline.html#cb11-3" tabindex="-1"></a>taxide <span class="ot">=</span> <span class="fu">subset</span>(taxa, <span class="sc">!</span>(<span class="fu">is.na</span>(domain)))</span>
+<span id="cb11-4"><a href="dada2-pipeline.html#cb11-4" tabindex="-1"></a><span class="co"># View how many sequences </span></span>
+<span id="cb11-5"><a href="dada2-pipeline.html#cb11-5" tabindex="-1"></a><span class="fu">dim</span>(taxint)</span>
+<span id="cb11-6"><a href="dada2-pipeline.html#cb11-6" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="dada2-pipeline.html#cb11-7" tabindex="-1"></a>seqtabint <span class="ot">=</span><span class="fu">as.data.frame</span>(seqtab.nochim)</span>
+<span id="cb11-8"><a href="dada2-pipeline.html#cb11-8" tabindex="-1"></a>seqtabint <span class="ot">=</span> seqtab.nochim[,<span class="fu">colnames</span>(seqtab.nochim) <span class="sc">%in%</span> <span class="fu">rownames</span>(taxint)]</span>
+<span id="cb11-9"><a href="dada2-pipeline.html#cb11-9" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="dada2-pipeline.html#cb11-10" tabindex="-1"></a><span class="co"># Reclassify with custom database arc.cassandre</span></span>
+<span id="cb11-11"><a href="dada2-pipeline.html#cb11-11" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&quot;/home/16S_db/arc.cassandre.trainingset.RData&quot;</span>) </span>
+<span id="cb11-12"><a href="dada2-pipeline.html#cb11-12" tabindex="-1"></a>dna <span class="ot">=</span> <span class="fu">DNAStringSet</span>(<span class="fu">getSequences</span>(seqtabint)) <span class="co"># Create a DNAStringSet from the ASVs</span></span>
+<span id="cb11-13"><a href="dada2-pipeline.html#cb11-13" tabindex="-1"></a>ids <span class="ot">=</span> <span class="fu">IdTaxa</span>(dna, trainingSet, <span class="at">strand=</span><span class="st">&quot;both&quot;</span>, <span class="at">processors=</span><span class="cn">NULL</span>, <span class="at">verbose=</span><span class="cn">FALSE</span>, <span class="at">threshold =</span> <span class="dv">50</span>)</span>
+<span id="cb11-14"><a href="dada2-pipeline.html#cb11-14" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="dada2-pipeline.html#cb11-15" tabindex="-1"></a>taxint <span class="ot">=</span> <span class="fu">t</span>(<span class="fu">sapply</span>(ids, <span class="cf">function</span>(x) {</span>
+<span id="cb11-16"><a href="dada2-pipeline.html#cb11-16" tabindex="-1"></a>        m <span class="ot">=</span> <span class="fu">match</span>(ranks, x<span class="sc">$</span>rank)</span>
+<span id="cb11-17"><a href="dada2-pipeline.html#cb11-17" tabindex="-1"></a>        taxa <span class="ot">=</span> x<span class="sc">$</span>taxon[m]</span>
+<span id="cb11-18"><a href="dada2-pipeline.html#cb11-18" tabindex="-1"></a>        taxa[<span class="fu">startsWith</span>(taxa, <span class="st">&quot;Unclassified_&quot;</span>)] <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb11-19"><a href="dada2-pipeline.html#cb11-19" tabindex="-1"></a>        taxa</span>
+<span id="cb11-20"><a href="dada2-pipeline.html#cb11-20" tabindex="-1"></a>}))</span>
+<span id="cb11-21"><a href="dada2-pipeline.html#cb11-21" tabindex="-1"></a><span class="fu">colnames</span>(taxint) <span class="ot">=</span> ranks; <span class="fu">rownames</span>(taxint) <span class="ot">=</span> <span class="fu">getSequences</span>(seqtabint)</span>
+<span id="cb11-22"><a href="dada2-pipeline.html#cb11-22" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="dada2-pipeline.html#cb11-23" tabindex="-1"></a><span class="co"># Keep only sequences classified Archaea</span></span>
+<span id="cb11-24"><a href="dada2-pipeline.html#cb11-24" tabindex="-1"></a>taxint <span class="ot">=</span><span class="fu">subset</span>(<span class="fu">as.data.frame</span>(taxint), domain <span class="sc">==</span><span class="st">&quot;Archaea&quot;</span>)</span>
+<span id="cb11-25"><a href="dada2-pipeline.html#cb11-25" tabindex="-1"></a><span class="co"># Swap previously classified sequences with SILVA to those classified using the custom and more precise database </span></span>
+<span id="cb11-26"><a href="dada2-pipeline.html#cb11-26" tabindex="-1"></a>taxide <span class="ot">=</span> taxide[<span class="sc">!</span>(<span class="fu">rownames</span>(taxide) <span class="sc">%in%</span> <span class="fu">rownames</span>(taxint)),]</span>
+<span id="cb11-27"><a href="dada2-pipeline.html#cb11-27" tabindex="-1"></a><span class="co"># Merge both tables </span></span>
+<span id="cb11-28"><a href="dada2-pipeline.html#cb11-28" tabindex="-1"></a>taxa <span class="ot">=</span> <span class="fu">rbind</span>(taxide, <span class="fu">as.data.frame</span>(taxint))</span>
+<span id="cb11-29"><a href="dada2-pipeline.html#cb11-29" tabindex="-1"></a>seqtab.nochim <span class="ot">=</span> seqtab.nochim[,<span class="fu">colnames</span>(seqtab.nochim) <span class="sc">%in%</span> <span class="fu">rownames</span>(taxid)]</span></code></pre></div>
+<p><strong>Database for Eukaryotes</strong></p>
+<p>As of Silva version 138, the official DADA2-formatted reference fastas are optimized for classification of Bacteria and Archaea, and are not suitable for classifying Eukaryotes and we therefore use PR2 database. Note that this database has different <code>taxLevels</code> than the DADA2 default.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="dada2-pipeline.html#cb12-1" tabindex="-1"></a>taxa <span class="ot">=</span> <span class="fu">assignTaxonomy</span>(seqtab.nochim, <span class="st">&quot;/home/16S_db/pr2_version_5.0.0_SSU_dada2.fasta.gz&quot;</span>, <span class="at">multithread=</span><span class="cn">TRUE</span>, <span class="at">tryRC=</span><span class="cn">TRUE</span>, <span class="at">taxLevels =</span> <span class="fu">c</span>(<span class="st">&quot;Kingdom&quot;</span>,<span class="st">&quot;Supergroup&quot;</span>,<span class="st">&quot;Division&quot;</span>,<span class="st">&quot;Class&quot;</span>,<span class="st">&quot;Order&quot;</span>,<span class="st">&quot;Family&quot;</span>,<span class="st">&quot;Genus&quot;</span>,<span class="st">&quot;Species&quot;</span>))</span></code></pre></div>
+</div>
+<div id="add-highest-identified-taxonomic-rank-to-unclassified-ranks" class="section level3 hasAnchor" number="3.1.8">
+<h3><span class="header-section-number">3.1.8</span> Add highest identified taxonomic rank to unclassified ranks<a href="dada2-pipeline.html#add-highest-identified-taxonomic-rank-to-unclassified-ranks" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="dada2-pipeline.html#cb13-1" tabindex="-1"></a><span class="co"># transpose table </span></span>
+<span id="cb13-2"><a href="dada2-pipeline.html#cb13-2" tabindex="-1"></a>taxid<span class="ot">=</span><span class="fu">data.frame</span>(<span class="fu">t</span>(taxa)) </span>
+<span id="cb13-3"><a href="dada2-pipeline.html#cb13-3" tabindex="-1"></a><span class="co"># As a sanity check transform every cells to characters</span></span>
+<span id="cb13-4"><a href="dada2-pipeline.html#cb13-4" tabindex="-1"></a>taxid[] <span class="ot">=</span> <span class="fu">lapply</span>(taxid, as.character) </span>
+<span id="cb13-5"><a href="dada2-pipeline.html#cb13-5" tabindex="-1"></a><span class="co"># Fills the NAs with the most recent non-NA value</span></span>
+<span id="cb13-6"><a href="dada2-pipeline.html#cb13-6" tabindex="-1"></a>taxa2<span class="ot">=</span> tidyr<span class="sc">::</span><span class="fu">fill</span>(taxid, <span class="fu">colnames</span>(taxid),<span class="at">.direction =</span> <span class="st">&quot;down&quot;</span>) </span>
+<span id="cb13-7"><a href="dada2-pipeline.html#cb13-7" tabindex="-1"></a><span class="co"># Paste Unclassified_ to the beginning of every cells</span></span>
+<span id="cb13-8"><a href="dada2-pipeline.html#cb13-8" tabindex="-1"></a>taxa2<span class="ot">=</span> <span class="fu">sapply</span>(taxa2, <span class="cf">function</span>(x){<span class="fu">paste0</span>(<span class="st">&quot;Unclassified_&quot;</span>, x)}) </span>
+<span id="cb13-9"><a href="dada2-pipeline.html#cb13-9" tabindex="-1"></a><span class="co"># Replace NAs to it&#39;s value from the table taxa2</span></span>
+<span id="cb13-10"><a href="dada2-pipeline.html#cb13-10" tabindex="-1"></a>taxid[<span class="fu">is.na</span>(taxid)] <span class="ot">=</span> taxa2[<span class="fu">is.na</span>(taxid)] </span>
+<span id="cb13-11"><a href="dada2-pipeline.html#cb13-11" tabindex="-1"></a> <span class="co"># Transpose table again</span></span>
+<span id="cb13-12"><a href="dada2-pipeline.html#cb13-12" tabindex="-1"></a>taxid <span class="ot">=</span> <span class="fu">t</span>(taxid)</span></code></pre></div>
+<p>Finally we remove from the tax table and ASV matrix the ASVs not classified to our domain or Kingdom of interest. If applicable replace Bacteria for either Archaea or Eukaryotes.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="dada2-pipeline.html#cb14-1" tabindex="-1"></a>taxid<span class="ot">=</span><span class="fu">subset</span>(<span class="fu">as.data.frame</span>(taxid), Kingdom <span class="sc">==</span><span class="st">&quot;Bacteria&quot;</span>)</span>
+<span id="cb14-2"><a href="dada2-pipeline.html#cb14-2" tabindex="-1"></a>seqtab.nochim <span class="ot">=</span> seqtab.nochim[,<span class="fu">colnames</span>(seqtab.nochim) <span class="sc">%in%</span> <span class="fu">rownames</span>(taxid)]</span></code></pre></div>
+</div>
+<div id="removing-contaminants" class="section level3 hasAnchor" number="3.1.9">
+<h3><span class="header-section-number">3.1.9</span> Removing contaminants<a href="dada2-pipeline.html#removing-contaminants" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The <code>decontam</code> package provides simple statistical methods to identify and visualize contaminating DNA features, allowing them to be removed and ultimately get a more accurate picture of the sampled communities to be constructed from marker-gene data. The package was designed to work with <code>phyloseq</code> objects from the phyloseq package.</p>
+<p>For this tutorial, the use of the <code>decontam</code> requires the two following :</p>
+<ul>
+<li>A table of the relative abundances of sequence features (columns) in each sample (rows).</li>
+<li>A metadata table where a defined set of “negative control” (samples in which sequencing was performed on blanks without any biological sample added) are identified as TRUE in a column called <code>negative</code> while other samples are identified as FALSE.</li>
+</ul>
+<p>We first load the metadata table where negative control are clearly identified and then generate a phyloseq object combining the table of relative abundances of sequences, the taxonomy table and the metadata table</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="dada2-pipeline.html#cb15-1" tabindex="-1"></a>meta <span class="ot">=</span> <span class="fu">read.table</span>(<span class="st">&quot;metadata.csv&quot;</span>, <span class="at">sep=</span><span class="st">&quot;,&quot;</span>, <span class="at">row.names=</span><span class="dv">1</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span>
+<span id="cb15-2"><a href="dada2-pipeline.html#cb15-2" tabindex="-1"></a>ps <span class="ot">=</span> <span class="fu">phyloseq</span>(<span class="fu">otu_table</span>(<span class="fu">t</span>(seqtab.nochim), <span class="at">taxa_are_rows=</span><span class="cn">TRUE</span>), <span class="fu">tax_table</span>(<span class="fu">as.matrix</span>(taxid)), <span class="fu">sample_data</span>(meta))</span></code></pre></div>
+<p>The contaminant identification method used in this workflow is the prevalence method (presence/absence across samples). In this method, the prevalence of each sequence feature in true positive samples is compared to the prevalence in negative controls to identify contaminants. In the prevalence test there is a special value worth knowing, <code>threshold=0.5</code>, that will identify as contaminants all sequences that are are more prevalent in negative controls than in positive samples.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="dada2-pipeline.html#cb16-1" tabindex="-1"></a>contamdf.prev <span class="ot">=</span> <span class="fu">isContaminant</span>(ps, <span class="at">method=</span><span class="st">&quot;prevalence&quot;</span>, <span class="at">neg=</span><span class="st">&quot;negative&quot;</span>, <span class="at">threshold=</span><span class="fl">0.5</span>)</span>
+<span id="cb16-2"><a href="dada2-pipeline.html#cb16-2" tabindex="-1"></a><span class="co"># Get the count of TRUE contaminant vs FALSE</span></span>
+<span id="cb16-3"><a href="dada2-pipeline.html#cb16-3" tabindex="-1"></a><span class="fu">table</span>(contamdf.prev<span class="sc">$</span>contaminant) </span>
+<span id="cb16-4"><a href="dada2-pipeline.html#cb16-4" tabindex="-1"></a><span class="co"># Remove sequences identified as contaminant</span></span>
+<span id="cb16-5"><a href="dada2-pipeline.html#cb16-5" tabindex="-1"></a>ps.noncontam <span class="ot">=</span> <span class="fu">prune_taxa</span>(<span class="sc">!</span>contamdf.prev<span class="sc">$</span>contaminant, ps) </span>
+<span id="cb16-6"><a href="dada2-pipeline.html#cb16-6" tabindex="-1"></a> <span class="co"># Remove negative control samples</span></span>
+<span id="cb16-7"><a href="dada2-pipeline.html#cb16-7" tabindex="-1"></a>ps_decontam<span class="ot">=</span><span class="fu">subset_samples</span>(ps.noncontam, <span class="sc">!</span>negative<span class="sc">==</span><span class="st">&quot;TRUE&quot;</span>)</span></code></pre></div>
+</div>
+<div id="generate-a-phylogenetic-tree" class="section level3 hasAnchor" number="3.1.10">
+<h3><span class="header-section-number">3.1.10</span> Generate a phylogenetic tree<a href="dada2-pipeline.html#generate-a-phylogenetic-tree" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Generating a phylogenetic tree is not mandatory for the downstream analysis unless the user plans on using any phylogeny based diversity metrics such as Unifrac.</p>
+<p>To build such tree we start by aligning the sequencing using the <code>AlignSeqs</code> function from package <code>DECIPHER</code>.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="dada2-pipeline.html#cb17-1" tabindex="-1"></a><span class="co"># Extract sequences from phyloseq object</span></span>
+<span id="cb17-2"><a href="dada2-pipeline.html#cb17-2" tabindex="-1"></a>asv_tab<span class="ot">=</span><span class="fu">as.data.frame</span>(<span class="fu">otu_table</span>(ps_decontam))</span>
+<span id="cb17-3"><a href="dada2-pipeline.html#cb17-3" tabindex="-1"></a>seqs <span class="ot">=</span> <span class="fu">getSequences</span>(<span class="fu">t</span>(asv_tab))</span>
+<span id="cb17-4"><a href="dada2-pipeline.html#cb17-4" tabindex="-1"></a><span class="fu">names</span>(seqs) <span class="ot">=</span> seqs</span>
+<span id="cb17-5"><a href="dada2-pipeline.html#cb17-5" tabindex="-1"></a><span class="co"># Aligning sequences</span></span>
+<span id="cb17-6"><a href="dada2-pipeline.html#cb17-6" tabindex="-1"></a>seq_align <span class="ot">=</span> <span class="fu">AlignSeqs</span>(<span class="fu">DNAStringSet</span>(seqs), <span class="at">anchor=</span><span class="cn">NA</span>, <span class="at">processors=</span><span class="dv">20</span>)</span>
+<span id="cb17-7"><a href="dada2-pipeline.html#cb17-7" tabindex="-1"></a><span class="co"># Set path to save the aligned sequence fastq file  </span></span>
+<span id="cb17-8"><a href="dada2-pipeline.html#cb17-8" tabindex="-1"></a><span class="fu">writeXStringSet</span>(seq_align, <span class="at">file =</span> <span class="st">&quot;~/project/domain/raw_data/align.fasta&quot;</span>,<span class="at">format=</span><span class="st">&quot;fasta&quot;</span>)</span></code></pre></div>
+<p>We then used the aligned fastq file to generate the tree using the tool <a href="http://www.microbesonline.org/fasttree/">FastTree</a>.
+As this tool is not an R library but rather a linux program the following commands must be executed from a terminal/command prompt.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="dada2-pipeline.html#cb18-1" tabindex="-1"></a><span class="co"># Change directory to the one containing the align.fasta file</span></span>
+<span id="cb18-2"><a href="dada2-pipeline.html#cb18-2" tabindex="-1"></a><span class="bu">cd</span> ~/project/domain/raw_data/</span>
+<span id="cb18-3"><a href="dada2-pipeline.html#cb18-3" tabindex="-1"></a><span class="co"># Execute fasttree algorithm on the align.fasta file and generate the file align_tree</span></span>
+<span id="cb18-4"><a href="dada2-pipeline.html#cb18-4" tabindex="-1"></a><span class="ex">fasttree</span> <span class="at">-nt</span> <span class="at">-gtr</span>  align.fasta <span class="op">&gt;</span> align_tree</span></code></pre></div>
+<p>The generated phylogenetic tree needs to be rooted to calculate any phylogeny based diversity metrics. For this we use the function <code>midpoint</code> from package <a href="https://www.rdocumentation.org/packages/phangorn/versions/2.11.1">phangorn</a>.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="dada2-pipeline.html#cb19-1" tabindex="-1"></a><span class="co"># Load file align_tree</span></span>
+<span id="cb19-2"><a href="dada2-pipeline.html#cb19-2" tabindex="-1"></a>Tree <span class="ot">=</span> ape<span class="sc">::</span><span class="fu">read.tree</span>(<span class="at">file =</span> <span class="st">&quot;~/project/domain/raw_data/align_tree&quot;</span>)</span>
+<span id="cb19-3"><a href="dada2-pipeline.html#cb19-3" tabindex="-1"></a><span class="co"># Add midpoint to tree</span></span>
+<span id="cb19-4"><a href="dada2-pipeline.html#cb19-4" tabindex="-1"></a>Tree.midpoint <span class="ot">=</span> phangorn<span class="sc">::</span><span class="fu">midpoint</span>(Tree)</span></code></pre></div>
+<p>Finally we add the rooted tree to our phyloseq object</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="dada2-pipeline.html#cb20-1" tabindex="-1"></a>tree <span class="ot">=</span> <span class="fu">phy_tree</span>(Tree.midpoint)</span>
+<span id="cb20-2"><a href="dada2-pipeline.html#cb20-2" tabindex="-1"></a>ps1 <span class="ot">=</span> <span class="fu">merge_phyloseq</span>(ps_decontam, tree)</span></code></pre></div>
+</div>
+<div id="add-dna-sequences" class="section level3 hasAnchor" number="3.1.11">
+<h3><span class="header-section-number">3.1.11</span> Add DNA sequences<a href="dada2-pipeline.html#add-dna-sequences" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="dada2-pipeline.html#cb21-1" tabindex="-1"></a>dna <span class="ot">=</span> Biostrings<span class="sc">::</span><span class="fu">DNAStringSet</span>(<span class="fu">taxa_names</span>(ps_decontam))</span>
+<span id="cb21-2"><a href="dada2-pipeline.html#cb21-2" tabindex="-1"></a><span class="fu">names</span>(dna) <span class="ot">=</span> <span class="fu">taxa_names</span>(ps_decontam)</span>
+<span id="cb21-3"><a href="dada2-pipeline.html#cb21-3" tabindex="-1"></a>ps1<span class="ot">=</span><span class="fu">merge_phyloseq</span>(ps1, dna)</span></code></pre></div>
+</div>
+<div id="shorten-asv-name" class="section level3 hasAnchor" number="3.1.12">
+<h3><span class="header-section-number">3.1.12</span> Shorten ASV name<a href="dada2-pipeline.html#shorten-asv-name" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We shorten ASV name from complete sequence to ASV#.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="dada2-pipeline.html#cb22-1" tabindex="-1"></a><span class="fu">taxa_names</span>(ps1) <span class="ot">=</span> <span class="fu">paste0</span>(<span class="st">&quot;ASV&quot;</span>, <span class="fu">seq</span>(<span class="fu">ntaxa</span>(ps1)))</span></code></pre></div>
+</div>
+<div id="save-tables" class="section level3 hasAnchor" number="3.1.13">
+<h3><span class="header-section-number">3.1.13</span> Save tables<a href="dada2-pipeline.html#save-tables" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="dada2-pipeline.html#cb23-1" tabindex="-1"></a>saving_path <span class="ot">=</span> <span class="st">&quot;~/project/domain/int_data&quot;</span></span>
+<span id="cb23-2"><a href="dada2-pipeline.html#cb23-2" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="dada2-pipeline.html#cb23-3" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="fu">as.data.frame</span>(<span class="fu">as</span>(<span class="fu">tax_table</span>(ps1), <span class="st">&quot;matrix&quot;</span>)), <span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/raw_taxa.csv&quot;</span>))</span>
+<span id="cb23-4"><a href="dada2-pipeline.html#cb23-4" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="fu">as.data.frame</span>(<span class="fu">as</span>(<span class="fu">otu_table</span>(ps1), <span class="st">&quot;matrix&quot;</span>)),<span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/raw_asv.csv&quot;</span>))</span>
+<span id="cb23-5"><a href="dada2-pipeline.html#cb23-5" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="fu">as.data.frame</span>(<span class="fu">as</span>(<span class="fu">sample_data</span>(ps1), <span class="st">&quot;matrix&quot;</span>)), <span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/raw_meta.csv&quot;</span>))</span>
+<span id="cb23-6"><a href="dada2-pipeline.html#cb23-6" tabindex="-1"></a>tree.raw <span class="ot">=</span> <span class="fu">phy_tree</span>(ps1)</span>
+<span id="cb23-7"><a href="dada2-pipeline.html#cb23-7" tabindex="-1"></a>ape<span class="sc">::</span><span class="fu">write.tree</span>(tree.raw , <span class="at">file =</span> <span class="fu">glue</span>(<span class="st">&quot;{path}/raw_tree.tree&quot;</span>))</span>
+<span id="cb23-8"><a href="dada2-pipeline.html#cb23-8" tabindex="-1"></a>ps1 <span class="sc">%&gt;%</span> <span class="fu">refseq</span>() <span class="sc">%&gt;%</span> Biostrings<span class="sc">::</span><span class="fu">writeXStringSet</span>(<span class="fu">glue</span>(<span class="st">&quot;{path}/raw_refseq.fna&quot;</span>), <span class="at">append=</span><span class="cn">FALSE</span>,</span>
+<span id="cb23-9"><a href="dada2-pipeline.html#cb23-9" tabindex="-1"></a>                                  <span class="at">compress=</span><span class="cn">FALSE</span>, <span class="at">compression_level=</span><span class="cn">NA</span>, <span class="at">format=</span><span class="st">&quot;fasta&quot;</span>)</span></code></pre></div>
+</div>
+</div>
+<div id="complete-code" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> Complete code<a href="dada2-pipeline.html#complete-code" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>You can copy-paste the following block of code inside a new markdown document.
+Code-chunks will be automatically generated and you can use the far right button (<font color='green'> ▶ </font>) to execute all of the code inside each chunk.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb24-1"><a href="dada2-pipeline.html#cb24-1" tabindex="-1"></a>```{r}</span>
+<span id="cb24-2"><a href="dada2-pipeline.html#cb24-2" tabindex="-1"></a><span class="co"># ----------- Load libraries -----------</span></span>
+<span id="cb24-3"><a href="dada2-pipeline.html#cb24-3" tabindex="-1"></a>library(dada2)</span>
+<span id="cb24-4"><a href="dada2-pipeline.html#cb24-4" tabindex="-1"></a>library(decontam)</span>
+<span id="cb24-5"><a href="dada2-pipeline.html#cb24-5" tabindex="-1"></a>library(phyloseq)</span>
+<span id="cb24-6"><a href="dada2-pipeline.html#cb24-6" tabindex="-1"></a>library(DECIPHER)</span>
+<span id="cb24-7"><a href="dada2-pipeline.html#cb24-7" tabindex="-1"></a>library(phangorn)</span>
+<span id="cb24-8"><a href="dada2-pipeline.html#cb24-8" tabindex="-1"></a></span>
+<span id="cb24-9"><a href="dada2-pipeline.html#cb24-9" tabindex="-1"></a><span class="co"># ----------- Set path where fastq files are located -----------</span></span>
+<span id="cb24-10"><a href="dada2-pipeline.html#cb24-10" tabindex="-1"></a>path <span class="op">=</span> <span class="st">&quot;~/project/domain/raw_data&quot;</span></span>
+<span id="cb24-11"><a href="dada2-pipeline.html#cb24-11" tabindex="-1"></a><span class="bu">list</span>.files(path)</span>
+<span id="cb24-12"><a href="dada2-pipeline.html#cb24-12" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="dada2-pipeline.html#cb24-13" tabindex="-1"></a>fnFs <span class="op">=</span> sort(<span class="bu">list</span>.files(path, pattern<span class="op">=</span><span class="st">&quot;_R1_001.fastq&quot;</span>, full.names <span class="op">=</span> TRUE)) </span>
+<span id="cb24-14"><a href="dada2-pipeline.html#cb24-14" tabindex="-1"></a>fnRs <span class="op">=</span> sort(<span class="bu">list</span>.files(path, pattern<span class="op">=</span><span class="st">&quot;_R2_001.fastq&quot;</span>, full.names <span class="op">=</span> TRUE))</span>
+<span id="cb24-15"><a href="dada2-pipeline.html#cb24-15" tabindex="-1"></a></span>
+<span id="cb24-16"><a href="dada2-pipeline.html#cb24-16" tabindex="-1"></a>sample.names <span class="op">=</span> sapply(strsplit(basename(fnFs), <span class="st">&quot;_&quot;</span>), `[`, <span class="dv">1</span>)</span>
+<span id="cb24-17"><a href="dada2-pipeline.html#cb24-17" tabindex="-1"></a></span>
+<span id="cb24-18"><a href="dada2-pipeline.html#cb24-18" tabindex="-1"></a><span class="co"># ----------- Inspect quality -----------</span></span>
+<span id="cb24-19"><a href="dada2-pipeline.html#cb24-19" tabindex="-1"></a>plotQualityProfile(fnFs, aggregate<span class="op">=</span>TRUE)</span>
+<span id="cb24-20"><a href="dada2-pipeline.html#cb24-20" tabindex="-1"></a>plotQualityProfile(fnRs, aggregate<span class="op">=</span>TRUE)</span>
+<span id="cb24-21"><a href="dada2-pipeline.html#cb24-21" tabindex="-1"></a>```</span>
+<span id="cb24-22"><a href="dada2-pipeline.html#cb24-22" tabindex="-1"></a></span>
+<span id="cb24-23"><a href="dada2-pipeline.html#cb24-23" tabindex="-1"></a>⛔<span class="co"># Before executing the next chunk of code inspect the generated graphs </span></span>
+<span id="cb24-24"><a href="dada2-pipeline.html#cb24-24" tabindex="-1"></a>⛔<span class="co"># to determine which value to use with function &quot;truncLen&quot; </span></span>
+<span id="cb24-25"><a href="dada2-pipeline.html#cb24-25" tabindex="-1"></a></span>
+<span id="cb24-26"><a href="dada2-pipeline.html#cb24-26" tabindex="-1"></a>```{r}</span>
+<span id="cb24-27"><a href="dada2-pipeline.html#cb24-27" tabindex="-1"></a><span class="co"># ----------- Filter and trim ----------- </span></span>
+<span id="cb24-28"><a href="dada2-pipeline.html#cb24-28" tabindex="-1"></a>filtFs <span class="op">=</span> <span class="bu">file</span>.path(path, <span class="st">&quot;filtered&quot;</span>, paste0(sample.names, <span class="st">&quot;_F_filt.fastq.gz&quot;</span>))</span>
+<span id="cb24-29"><a href="dada2-pipeline.html#cb24-29" tabindex="-1"></a>filtRs <span class="op">=</span> <span class="bu">file</span>.path(path, <span class="st">&quot;filtered&quot;</span>, paste0(sample.names, <span class="st">&quot;_R_filt.fastq.gz&quot;</span>))</span>
+<span id="cb24-30"><a href="dada2-pipeline.html#cb24-30" tabindex="-1"></a></span>
+<span id="cb24-31"><a href="dada2-pipeline.html#cb24-31" tabindex="-1"></a>names(filtFs) <span class="op">=</span> sample.names</span>
+<span id="cb24-32"><a href="dada2-pipeline.html#cb24-32" tabindex="-1"></a>names(filtRs) <span class="op">=</span> sample.names</span>
+<span id="cb24-33"><a href="dada2-pipeline.html#cb24-33" tabindex="-1"></a></span>
+<span id="cb24-34"><a href="dada2-pipeline.html#cb24-34" tabindex="-1"></a><span class="co"># ------ </span><span class="al">###</span><span class="co"> For Bacteria </span><span class="al">###</span><span class="co"> ------ #</span></span>
+<span id="cb24-35"><a href="dada2-pipeline.html#cb24-35" tabindex="-1"></a>out <span class="op">=</span> filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft <span class="op">=</span> c(<span class="dv">18</span>,<span class="dv">21</span>), truncLen<span class="op">=</span>c(<span class="dv">280</span>,<span class="dv">240</span>),</span>
+<span id="cb24-36"><a href="dada2-pipeline.html#cb24-36" tabindex="-1"></a>                     maxN<span class="op">=</span><span class="dv">0</span>, maxEE<span class="op">=</span>c(<span class="dv">2</span>,<span class="dv">2</span>), truncQ<span class="op">=</span><span class="dv">2</span>,rm.phix<span class="op">=</span>TRUE, </span>
+<span id="cb24-37"><a href="dada2-pipeline.html#cb24-37" tabindex="-1"></a>                     compress<span class="op">=</span>TRUE, multithread<span class="op">=</span>TRUE) </span>
+<span id="cb24-38"><a href="dada2-pipeline.html#cb24-38" tabindex="-1"></a><span class="co"># ------ </span><span class="al">###</span><span class="co"> For Archaea </span><span class="al">###</span><span class="co"> ------ #</span></span>
+<span id="cb24-39"><a href="dada2-pipeline.html#cb24-39" tabindex="-1"></a>out <span class="op">=</span> filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft <span class="op">=</span> c(<span class="dv">18</span>,<span class="dv">20</span>), truncLen<span class="op">=</span>c(<span class="dv">280</span>,<span class="dv">240</span>),</span>
+<span id="cb24-40"><a href="dada2-pipeline.html#cb24-40" tabindex="-1"></a>                     maxN<span class="op">=</span><span class="dv">0</span>, maxEE<span class="op">=</span>c(<span class="dv">2</span>,<span class="dv">2</span>), truncQ<span class="op">=</span><span class="dv">2</span>,rm.phix<span class="op">=</span>TRUE, </span>
+<span id="cb24-41"><a href="dada2-pipeline.html#cb24-41" tabindex="-1"></a>                     compress<span class="op">=</span>TRUE, multithread<span class="op">=</span>TRUE) </span>
+<span id="cb24-42"><a href="dada2-pipeline.html#cb24-42" tabindex="-1"></a><span class="co"># ------ </span><span class="al">###</span><span class="co"> For Eukaryotes </span><span class="al">###</span><span class="co"> ------ #</span></span>
+<span id="cb24-43"><a href="dada2-pipeline.html#cb24-43" tabindex="-1"></a>out <span class="op">=</span> filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimLeft <span class="op">=</span> c(<span class="dv">21</span>,<span class="dv">21</span>), truncLen<span class="op">=</span>c(<span class="dv">280</span>,<span class="dv">240</span>),</span>
+<span id="cb24-44"><a href="dada2-pipeline.html#cb24-44" tabindex="-1"></a>                     maxN<span class="op">=</span><span class="dv">0</span>, maxEE<span class="op">=</span>c(<span class="dv">2</span>,<span class="dv">2</span>), truncQ<span class="op">=</span><span class="dv">2</span>,rm.phix<span class="op">=</span>TRUE, </span>
+<span id="cb24-45"><a href="dada2-pipeline.html#cb24-45" tabindex="-1"></a>                     compress<span class="op">=</span>TRUE, multithread<span class="op">=</span>TRUE) </span>
+<span id="cb24-46"><a href="dada2-pipeline.html#cb24-46" tabindex="-1"></a></span>
+<span id="cb24-47"><a href="dada2-pipeline.html#cb24-47" tabindex="-1"></a><span class="co"># ----------- Learn error rates ----------- </span></span>
+<span id="cb24-48"><a href="dada2-pipeline.html#cb24-48" tabindex="-1"></a>errF <span class="op">=</span> learnErrors(filtFs, multithread<span class="op">=</span>TRUE, randomize<span class="op">=</span>TRUE)</span>
+<span id="cb24-49"><a href="dada2-pipeline.html#cb24-49" tabindex="-1"></a>errR <span class="op">=</span> learnErrors(filtRs, multithread<span class="op">=</span>TRUE, randomize<span class="op">=</span>TRUE)</span>
+<span id="cb24-50"><a href="dada2-pipeline.html#cb24-50" tabindex="-1"></a></span>
+<span id="cb24-51"><a href="dada2-pipeline.html#cb24-51" tabindex="-1"></a><span class="co"># visualize the estimated error rates, as a sanity check if nothing else</span></span>
+<span id="cb24-52"><a href="dada2-pipeline.html#cb24-52" tabindex="-1"></a>plotErrors(errF, nominalQ<span class="op">=</span>TRUE)</span>
+<span id="cb24-53"><a href="dada2-pipeline.html#cb24-53" tabindex="-1"></a></span>
+<span id="cb24-54"><a href="dada2-pipeline.html#cb24-54" tabindex="-1"></a><span class="co"># Apply the core sample inference algorithm to the filtered and trimmed sequence data</span></span>
+<span id="cb24-55"><a href="dada2-pipeline.html#cb24-55" tabindex="-1"></a>dadaFs <span class="op">=</span> dada(filtFs, err<span class="op">=</span>errF, pool <span class="op">=</span> <span class="st">&quot;pseudo&quot;</span>, multithread<span class="op">=</span>TRUE)</span>
+<span id="cb24-56"><a href="dada2-pipeline.html#cb24-56" tabindex="-1"></a>dadaRs <span class="op">=</span> dada(filtRs, err<span class="op">=</span>errR, pool <span class="op">=</span> <span class="st">&quot;pseudo&quot;</span>, multithread<span class="op">=</span>TRUE)</span>
+<span id="cb24-57"><a href="dada2-pipeline.html#cb24-57" tabindex="-1"></a></span>
+<span id="cb24-58"><a href="dada2-pipeline.html#cb24-58" tabindex="-1"></a><span class="co"># ----------- Construct amplicon sequence variant table (ASV) ----------- </span></span>
+<span id="cb24-59"><a href="dada2-pipeline.html#cb24-59" tabindex="-1"></a><span class="co"># Merging the paired reads</span></span>
+<span id="cb24-60"><a href="dada2-pipeline.html#cb24-60" tabindex="-1"></a>mergers <span class="op">=</span> mergePairs(dadaFs, filtFs, dadaRs, filtRs)</span>
+<span id="cb24-61"><a href="dada2-pipeline.html#cb24-61" tabindex="-1"></a><span class="co"># Construct an amplicon sequence variant table (ASV) table (a higher-resolution version of the OTU table produced by traditional methods)</span></span>
+<span id="cb24-62"><a href="dada2-pipeline.html#cb24-62" tabindex="-1"></a>seqtab <span class="op">=</span> makeSequenceTable(mergers)</span>
+<span id="cb24-63"><a href="dada2-pipeline.html#cb24-63" tabindex="-1"></a><span class="co">#View dimension of your matrices </span></span>
+<span id="cb24-64"><a href="dada2-pipeline.html#cb24-64" tabindex="-1"></a>dim(seqtab)</span>
+<span id="cb24-65"><a href="dada2-pipeline.html#cb24-65" tabindex="-1"></a><span class="co"># Inspect distribution of sequence lengths</span></span>
+<span id="cb24-66"><a href="dada2-pipeline.html#cb24-66" tabindex="-1"></a>table(nchar(getSequences(seqtab)))</span>
+<span id="cb24-67"><a href="dada2-pipeline.html#cb24-67" tabindex="-1"></a></span>
+<span id="cb24-68"><a href="dada2-pipeline.html#cb24-68" tabindex="-1"></a><span class="co"># ----------- Remove chimeras ----------- </span></span>
+<span id="cb24-69"><a href="dada2-pipeline.html#cb24-69" tabindex="-1"></a>seqtab.nochim <span class="op">=</span> removeBimeraDenovo(seqtab, method<span class="op">=</span><span class="st">&quot;consensus&quot;</span>, multithread<span class="op">=</span>TRUE)</span>
+<span id="cb24-70"><a href="dada2-pipeline.html#cb24-70" tabindex="-1"></a><span class="co">#View dimension of your matrices </span></span>
+<span id="cb24-71"><a href="dada2-pipeline.html#cb24-71" tabindex="-1"></a>dim(seqtab.nochim)</span>
+<span id="cb24-72"><a href="dada2-pipeline.html#cb24-72" tabindex="-1"></a><span class="bu">sum</span>(seqtab.nochim)<span class="op">/</span><span class="bu">sum</span>(seqtab)</span>
+<span id="cb24-73"><a href="dada2-pipeline.html#cb24-73" tabindex="-1"></a></span>
+<span id="cb24-74"><a href="dada2-pipeline.html#cb24-74" tabindex="-1"></a><span class="co"># ----------- Track reads through pipeline ----------- </span></span>
+<span id="cb24-75"><a href="dada2-pipeline.html#cb24-75" tabindex="-1"></a>getN <span class="op">=</span> function(x) <span class="bu">sum</span>(getUniques(x))</span>
+<span id="cb24-76"><a href="dada2-pipeline.html#cb24-76" tabindex="-1"></a>track <span class="op">=</span> cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))</span>
+<span id="cb24-77"><a href="dada2-pipeline.html#cb24-77" tabindex="-1"></a>colnames(track) <span class="op">=</span> c(<span class="st">&quot;input&quot;</span>, <span class="st">&quot;filtered&quot;</span>, <span class="st">&quot;denoisedF&quot;</span>, <span class="st">&quot;denoisedR&quot;</span>, <span class="st">&quot;merged&quot;</span>, <span class="st">&quot;nonchim&quot;</span>)</span>
+<span id="cb24-78"><a href="dada2-pipeline.html#cb24-78" tabindex="-1"></a>rownames(track) <span class="op">=</span> sample.names</span>
+<span id="cb24-79"><a href="dada2-pipeline.html#cb24-79" tabindex="-1"></a>track</span>
+<span id="cb24-80"><a href="dada2-pipeline.html#cb24-80" tabindex="-1"></a></span>
+<span id="cb24-81"><a href="dada2-pipeline.html#cb24-81" tabindex="-1"></a><span class="co"># ----------- Assign taxonomy  -----------</span></span>
+<span id="cb24-82"><a href="dada2-pipeline.html#cb24-82" tabindex="-1"></a></span>
+<span id="cb24-83"><a href="dada2-pipeline.html#cb24-83" tabindex="-1"></a><span class="co"># ------ </span><span class="al">###</span><span class="co"> For Procayotes </span><span class="al">###</span><span class="co"> ------ #</span></span>
+<span id="cb24-84"><a href="dada2-pipeline.html#cb24-84" tabindex="-1"></a>taxa <span class="op">=</span> assignTaxonomy(seqtab.nochim, <span class="st">&quot;/home/16S_db/silva_nr99_v138.1_train_set.fa.gz&quot;</span>, multithread<span class="op">=</span>TRUE, tryRC<span class="op">=</span>TRUE)</span>
+<span id="cb24-85"><a href="dada2-pipeline.html#cb24-85" tabindex="-1"></a></span>
+<span id="cb24-86"><a href="dada2-pipeline.html#cb24-86" tabindex="-1"></a><span class="co"># ------ </span><span class="al">###</span><span class="co"> Further classification for Archaea </span><span class="al">###</span><span class="co"> ------ #</span></span>
+<span id="cb24-87"><a href="dada2-pipeline.html#cb24-87" tabindex="-1"></a><span class="co"># Extract sequences not identified to the phylum and domain</span></span>
+<span id="cb24-88"><a href="dada2-pipeline.html#cb24-88" tabindex="-1"></a>taxint <span class="op">=</span> subset(taxa, <span class="kw">is</span>.na(phylum))</span>
+<span id="cb24-89"><a href="dada2-pipeline.html#cb24-89" tabindex="-1"></a>taxide <span class="op">=</span> subset(taxa, <span class="op">!</span>(<span class="kw">is</span>.na(domain)))</span>
+<span id="cb24-90"><a href="dada2-pipeline.html#cb24-90" tabindex="-1"></a><span class="co"># View how many sequences </span></span>
+<span id="cb24-91"><a href="dada2-pipeline.html#cb24-91" tabindex="-1"></a>dim(taxint)</span>
+<span id="cb24-92"><a href="dada2-pipeline.html#cb24-92" tabindex="-1"></a>seqtabint <span class="op">=</span> <span class="im">as</span>.data.frame(seqtab.nochim)</span>
+<span id="cb24-93"><a href="dada2-pipeline.html#cb24-93" tabindex="-1"></a>seqtabint <span class="op">=</span> seqtab.nochim[,colnames(seqtab.nochim) <span class="op">%</span><span class="kw">in</span><span class="op">%</span> rownames(taxint)]</span>
+<span id="cb24-94"><a href="dada2-pipeline.html#cb24-94" tabindex="-1"></a><span class="co"># Reclassify with custom database arc.cassandre</span></span>
+<span id="cb24-95"><a href="dada2-pipeline.html#cb24-95" tabindex="-1"></a>load(<span class="st">&quot;/home/16S_db/arc.cassandre.trainingset.RData&quot;</span>) </span>
+<span id="cb24-96"><a href="dada2-pipeline.html#cb24-96" tabindex="-1"></a>dna <span class="op">=</span> DNAStringSet(getSequences(seqtabint)) <span class="co"># Create a DNAStringSet from the ASVs</span></span>
+<span id="cb24-97"><a href="dada2-pipeline.html#cb24-97" tabindex="-1"></a>ids <span class="op">=</span> IdTaxa(dna, trainingSet, strand<span class="op">=</span><span class="st">&quot;both&quot;</span>, processors<span class="op">=</span>NULL, verbose<span class="op">=</span>FALSE, threshold <span class="op">=</span> <span class="dv">50</span>)</span>
+<span id="cb24-98"><a href="dada2-pipeline.html#cb24-98" tabindex="-1"></a>taxint <span class="op">=</span> t(sapply(ids, function(x) {</span>
+<span id="cb24-99"><a href="dada2-pipeline.html#cb24-99" tabindex="-1"></a>        m <span class="op">=</span> match(ranks, x$rank)</span>
+<span id="cb24-100"><a href="dada2-pipeline.html#cb24-100" tabindex="-1"></a>        taxa <span class="op">=</span> x$taxon[m]</span>
+<span id="cb24-101"><a href="dada2-pipeline.html#cb24-101" tabindex="-1"></a>        taxa[startsWith(taxa, <span class="st">&quot;Unclassified_&quot;</span>)] <span class="op">=</span> NA</span>
+<span id="cb24-102"><a href="dada2-pipeline.html#cb24-102" tabindex="-1"></a>        taxa</span>
+<span id="cb24-103"><a href="dada2-pipeline.html#cb24-103" tabindex="-1"></a>}))</span>
+<span id="cb24-104"><a href="dada2-pipeline.html#cb24-104" tabindex="-1"></a>colnames(taxint) <span class="op">=</span> ranks<span class="op">;</span> rownames(taxint) <span class="op">=</span> getSequences(seqtabint)</span>
+<span id="cb24-105"><a href="dada2-pipeline.html#cb24-105" tabindex="-1"></a><span class="co"># Keep only sequences classified Archaea</span></span>
+<span id="cb24-106"><a href="dada2-pipeline.html#cb24-106" tabindex="-1"></a>taxint <span class="op">=</span> subset(<span class="im">as</span>.data.frame(taxint), domain <span class="op">==</span><span class="st">&quot;Archaea&quot;</span>)</span>
+<span id="cb24-107"><a href="dada2-pipeline.html#cb24-107" tabindex="-1"></a><span class="co"># Swap previously classified sequences with SILVA to those classified using the custom and more precise database </span></span>
+<span id="cb24-108"><a href="dada2-pipeline.html#cb24-108" tabindex="-1"></a>taxide <span class="op">=</span> taxide[<span class="op">!</span>(rownames(taxide) <span class="op">%</span><span class="kw">in</span><span class="op">%</span> rownames(taxint)),]</span>
+<span id="cb24-109"><a href="dada2-pipeline.html#cb24-109" tabindex="-1"></a><span class="co"># Merge both tables </span></span>
+<span id="cb24-110"><a href="dada2-pipeline.html#cb24-110" tabindex="-1"></a>taxa <span class="op">=</span> rbind(taxide, <span class="im">as</span>.data.frame(taxint))</span>
+<span id="cb24-111"><a href="dada2-pipeline.html#cb24-111" tabindex="-1"></a>seqtab.nochim <span class="op">=</span> seqtab.nochim[,colnames(seqtab.nochim) <span class="op">%</span><span class="kw">in</span><span class="op">%</span> rownames(taxid)]</span>
+<span id="cb24-112"><a href="dada2-pipeline.html#cb24-112" tabindex="-1"></a></span>
+<span id="cb24-113"><a href="dada2-pipeline.html#cb24-113" tabindex="-1"></a><span class="co"># ------ </span><span class="al">###</span><span class="co"> For Eukaryote </span><span class="al">###</span><span class="co"> ------ #</span></span>
+<span id="cb24-114"><a href="dada2-pipeline.html#cb24-114" tabindex="-1"></a>taxa <span class="op">=</span> assignTaxonomy(seqtab.nochim, <span class="st">&quot;/home/16S_db/pr2_version_5.0.0_SSU_dada2.fasta.gz&quot;</span>, multithread<span class="op">=</span>TRUE, tryRC<span class="op">=</span>TRUE, taxLevels <span class="op">=</span> c(<span class="st">&quot;Kingdom&quot;</span>,<span class="st">&quot;Supergroup&quot;</span>,<span class="st">&quot;Division&quot;</span>,<span class="st">&quot;Class&quot;</span>,<span class="st">&quot;Order&quot;</span>,<span class="st">&quot;Family&quot;</span>,<span class="st">&quot;Genus&quot;</span>,<span class="st">&quot;Species&quot;</span>))</span>
+<span id="cb24-115"><a href="dada2-pipeline.html#cb24-115" tabindex="-1"></a></span>
+<span id="cb24-116"><a href="dada2-pipeline.html#cb24-116" tabindex="-1"></a><span class="co"># ----------- Add highest classified rank to unclassified -----------</span></span>
+<span id="cb24-117"><a href="dada2-pipeline.html#cb24-117" tabindex="-1"></a><span class="co"># transpose table </span></span>
+<span id="cb24-118"><a href="dada2-pipeline.html#cb24-118" tabindex="-1"></a>taxid <span class="op">=</span> data.frame(t(taxa)) </span>
+<span id="cb24-119"><a href="dada2-pipeline.html#cb24-119" tabindex="-1"></a><span class="co"># As a sanity check transform every cells to characters</span></span>
+<span id="cb24-120"><a href="dada2-pipeline.html#cb24-120" tabindex="-1"></a>taxid[] <span class="op">=</span> lapply(taxid, <span class="im">as</span>.character) </span>
+<span id="cb24-121"><a href="dada2-pipeline.html#cb24-121" tabindex="-1"></a><span class="co"># Fills the NAs with the most recent non-NA value</span></span>
+<span id="cb24-122"><a href="dada2-pipeline.html#cb24-122" tabindex="-1"></a>taxa2<span class="op">=</span> tidyr::fill(taxid, colnames(taxid),.direction <span class="op">=</span> <span class="st">&quot;down&quot;</span>) </span>
+<span id="cb24-123"><a href="dada2-pipeline.html#cb24-123" tabindex="-1"></a><span class="co"># Paste Unclassified_ to the beginning of every cells</span></span>
+<span id="cb24-124"><a href="dada2-pipeline.html#cb24-124" tabindex="-1"></a>taxa2<span class="op">=</span> sapply(taxa2, function(x){paste0(<span class="st">&quot;Unclassified_&quot;</span>, x)}) </span>
+<span id="cb24-125"><a href="dada2-pipeline.html#cb24-125" tabindex="-1"></a><span class="co"># Replace NAs to it&#39;s value from the table taxa2</span></span>
+<span id="cb24-126"><a href="dada2-pipeline.html#cb24-126" tabindex="-1"></a>taxid[<span class="kw">is</span>.na(taxid)] <span class="op">=</span> taxa2[<span class="kw">is</span>.na(taxid)] </span>
+<span id="cb24-127"><a href="dada2-pipeline.html#cb24-127" tabindex="-1"></a> <span class="co"># Transpose table again</span></span>
+<span id="cb24-128"><a href="dada2-pipeline.html#cb24-128" tabindex="-1"></a>taxid <span class="op">=</span> t(taxid)</span>
+<span id="cb24-129"><a href="dada2-pipeline.html#cb24-129" tabindex="-1"></a></span>
+<span id="cb24-130"><a href="dada2-pipeline.html#cb24-130" tabindex="-1"></a><span class="co"># ----------- Remove contaminants -----------</span></span>
+<span id="cb24-131"><a href="dada2-pipeline.html#cb24-131" tabindex="-1"></a>meta <span class="op">=</span> read.table(<span class="st">&quot;metadata.csv&quot;</span>, sep<span class="op">=</span><span class="st">&quot;,&quot;</span>, row.names<span class="op">=</span><span class="dv">1</span>, header<span class="op">=</span>TRUE)</span>
+<span id="cb24-132"><a href="dada2-pipeline.html#cb24-132" tabindex="-1"></a>ps <span class="op">=</span> phyloseq(otu_table(t(seqtab.nochim), taxa_are_rows<span class="op">=</span>TRUE), tax_table(<span class="im">as</span>.matrix(taxid)), sample_data(meta))</span>
+<span id="cb24-133"><a href="dada2-pipeline.html#cb24-133" tabindex="-1"></a>contamdf.prev <span class="op">=</span> isContaminant(ps, method<span class="op">=</span><span class="st">&quot;prevalence&quot;</span>, neg<span class="op">=</span><span class="st">&quot;negative&quot;</span>, threshold<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb24-134"><a href="dada2-pipeline.html#cb24-134" tabindex="-1"></a><span class="co"># Get the count of TRUE contaminant vs FALSE</span></span>
+<span id="cb24-135"><a href="dada2-pipeline.html#cb24-135" tabindex="-1"></a>table(contamdf.prev$contaminant) </span>
+<span id="cb24-136"><a href="dada2-pipeline.html#cb24-136" tabindex="-1"></a><span class="co"># Remove sequences identified as contaminant</span></span>
+<span id="cb24-137"><a href="dada2-pipeline.html#cb24-137" tabindex="-1"></a>ps.noncontam <span class="op">=</span> prune_taxa(<span class="op">!</span>contamdf.prev$contaminant, ps) </span>
+<span id="cb24-138"><a href="dada2-pipeline.html#cb24-138" tabindex="-1"></a> <span class="co"># Remove negative control samples</span></span>
+<span id="cb24-139"><a href="dada2-pipeline.html#cb24-139" tabindex="-1"></a>ps_decontam<span class="op">=</span>subset_samples(ps.noncontam, <span class="op">!</span>negative<span class="op">==</span><span class="st">&quot;TRUE&quot;</span>)</span>
+<span id="cb24-140"><a href="dada2-pipeline.html#cb24-140" tabindex="-1"></a></span>
+<span id="cb24-141"><a href="dada2-pipeline.html#cb24-141" tabindex="-1"></a><span class="co"># ----------- Phylogenetic tree -----------</span></span>
+<span id="cb24-142"><a href="dada2-pipeline.html#cb24-142" tabindex="-1"></a><span class="co"># Extract sequences from phyloseq object</span></span>
+<span id="cb24-143"><a href="dada2-pipeline.html#cb24-143" tabindex="-1"></a>asv_tab<span class="op">=</span><span class="im">as</span>.data.frame(otu_table(ps_decontam))</span>
+<span id="cb24-144"><a href="dada2-pipeline.html#cb24-144" tabindex="-1"></a>seqs <span class="op">=</span> getSequences(t(asv_tab))</span>
+<span id="cb24-145"><a href="dada2-pipeline.html#cb24-145" tabindex="-1"></a>names(seqs) <span class="op">=</span> seqs</span>
+<span id="cb24-146"><a href="dada2-pipeline.html#cb24-146" tabindex="-1"></a><span class="co"># Aligning sequences</span></span>
+<span id="cb24-147"><a href="dada2-pipeline.html#cb24-147" tabindex="-1"></a>seq_align <span class="op">=</span> AlignSeqs(DNAStringSet(seqs), anchor<span class="op">=</span>NA, processors<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb24-148"><a href="dada2-pipeline.html#cb24-148" tabindex="-1"></a><span class="co"># Set path to save the aligned sequence fastq file  </span></span>
+<span id="cb24-149"><a href="dada2-pipeline.html#cb24-149" tabindex="-1"></a>writeXStringSet(seq_align, <span class="bu">file</span> <span class="op">=</span> <span class="st">&quot;~/project/domain/raw_data/align.fasta&quot;</span>,<span class="bu">format</span><span class="op">=</span><span class="st">&quot;fasta&quot;</span>)</span>
+<span id="cb24-150"><a href="dada2-pipeline.html#cb24-150" tabindex="-1"></a>```</span>
+<span id="cb24-151"><a href="dada2-pipeline.html#cb24-151" tabindex="-1"></a></span>
+<span id="cb24-152"><a href="dada2-pipeline.html#cb24-152" tabindex="-1"></a><span class="co"># ----------- Generate tree using FastTree -----------  </span></span>
+<span id="cb24-153"><a href="dada2-pipeline.html#cb24-153" tabindex="-1"></a></span>
+<span id="cb24-154"><a href="dada2-pipeline.html#cb24-154" tabindex="-1"></a>```{bash}</span>
+<span id="cb24-155"><a href="dada2-pipeline.html#cb24-155" tabindex="-1"></a><span class="co"># Change directory to the one containing the align.fasta file</span></span>
+<span id="cb24-156"><a href="dada2-pipeline.html#cb24-156" tabindex="-1"></a>cd <span class="op">~/</span>project<span class="op">/</span>domain<span class="op">/</span>raw_data<span class="op">/</span></span>
+<span id="cb24-157"><a href="dada2-pipeline.html#cb24-157" tabindex="-1"></a><span class="co"># Execute fasttree algorithm on the align.fasta file and generate the file align_tree</span></span>
+<span id="cb24-158"><a href="dada2-pipeline.html#cb24-158" tabindex="-1"></a>fasttree <span class="op">-</span>nt <span class="op">-</span>gtr  align.fasta <span class="op">&gt;</span> align_tree</span>
+<span id="cb24-159"><a href="dada2-pipeline.html#cb24-159" tabindex="-1"></a>```</span>
+<span id="cb24-160"><a href="dada2-pipeline.html#cb24-160" tabindex="-1"></a></span>
+<span id="cb24-161"><a href="dada2-pipeline.html#cb24-161" tabindex="-1"></a><span class="co"># ----------- Root tree -----------</span></span>
+<span id="cb24-162"><a href="dada2-pipeline.html#cb24-162" tabindex="-1"></a></span>
+<span id="cb24-163"><a href="dada2-pipeline.html#cb24-163" tabindex="-1"></a>```{r}</span>
+<span id="cb24-164"><a href="dada2-pipeline.html#cb24-164" tabindex="-1"></a><span class="co"># Load file align_tree</span></span>
+<span id="cb24-165"><a href="dada2-pipeline.html#cb24-165" tabindex="-1"></a>Tree <span class="op">=</span> ape::read.tree(<span class="bu">file</span> <span class="op">=</span> <span class="st">&quot;~/project/domain/raw_data/align.fasta&quot;</span>)</span>
+<span id="cb24-166"><a href="dada2-pipeline.html#cb24-166" tabindex="-1"></a><span class="co"># Add midpoint to tree</span></span>
+<span id="cb24-167"><a href="dada2-pipeline.html#cb24-167" tabindex="-1"></a>Tree.midpoint <span class="op">=</span> phangorn::midpoint(Tree)</span>
+<span id="cb24-168"><a href="dada2-pipeline.html#cb24-168" tabindex="-1"></a></span>
+<span id="cb24-169"><a href="dada2-pipeline.html#cb24-169" tabindex="-1"></a><span class="co"># ----------- Add rooted tree to phyloseq objet -----------</span></span>
+<span id="cb24-170"><a href="dada2-pipeline.html#cb24-170" tabindex="-1"></a>tree <span class="op">=</span> phy_tree(Tree.midpoint)</span>
+<span id="cb24-171"><a href="dada2-pipeline.html#cb24-171" tabindex="-1"></a>ps1 <span class="op">=</span> merge_phyloseq(ps_decontam, tree)</span>
+<span id="cb24-172"><a href="dada2-pipeline.html#cb24-172" tabindex="-1"></a></span>
+<span id="cb24-173"><a href="dada2-pipeline.html#cb24-173" tabindex="-1"></a><span class="co"># ----------- Add DNA sequence -----------</span></span>
+<span id="cb24-174"><a href="dada2-pipeline.html#cb24-174" tabindex="-1"></a>dna <span class="op">=</span> Biostrings::DNAStringSet(taxa_names(ps_decontam))</span>
+<span id="cb24-175"><a href="dada2-pipeline.html#cb24-175" tabindex="-1"></a>names(dna) <span class="op">=</span> taxa_names(ps_decontam)</span>
+<span id="cb24-176"><a href="dada2-pipeline.html#cb24-176" tabindex="-1"></a>ps1<span class="op">=</span>merge_phyloseq(ps1, dna)</span>
+<span id="cb24-177"><a href="dada2-pipeline.html#cb24-177" tabindex="-1"></a></span>
+<span id="cb24-178"><a href="dada2-pipeline.html#cb24-178" tabindex="-1"></a><span class="co"># ----------- Shorten ASV name -----------</span></span>
+<span id="cb24-179"><a href="dada2-pipeline.html#cb24-179" tabindex="-1"></a>taxa_names(ps1) <span class="op">=</span> paste0(<span class="st">&quot;ASV&quot;</span>, seq(ntaxa(ps1)))</span>
+<span id="cb24-180"><a href="dada2-pipeline.html#cb24-180" tabindex="-1"></a></span>
+<span id="cb24-181"><a href="dada2-pipeline.html#cb24-181" tabindex="-1"></a><span class="co"># ----------- Save tables -----------</span></span>
+<span id="cb24-182"><a href="dada2-pipeline.html#cb24-182" tabindex="-1"></a>saving_path <span class="op">=</span> <span class="st">&quot;~/project/domain/int_data&quot;</span></span>
+<span id="cb24-183"><a href="dada2-pipeline.html#cb24-183" tabindex="-1"></a></span>
+<span id="cb24-184"><a href="dada2-pipeline.html#cb24-184" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(tax_table(ps1), <span class="st">&quot;matrix&quot;</span>)), <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_taxa.csv&quot;</span>))</span>
+<span id="cb24-185"><a href="dada2-pipeline.html#cb24-185" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(otu_table(ps1), <span class="st">&quot;matrix&quot;</span>)),<span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_asv.csv&quot;</span>))</span>
+<span id="cb24-186"><a href="dada2-pipeline.html#cb24-186" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(sample_data(ps1), <span class="st">&quot;matrix&quot;</span>)), <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_meta.csv&quot;</span>))</span>
+<span id="cb24-187"><a href="dada2-pipeline.html#cb24-187" tabindex="-1"></a>tree.raw <span class="op">=</span> phy_tree(ps1)</span>
+<span id="cb24-188"><a href="dada2-pipeline.html#cb24-188" tabindex="-1"></a>ape::write.tree(tree.raw , <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_tree.tree&quot;</span>))</span>
+<span id="cb24-189"><a href="dada2-pipeline.html#cb24-189" tabindex="-1"></a>ps1 <span class="op">%&gt;%</span> refseq() <span class="op">%&gt;%</span> Biostrings::writeXStringSet(glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_refseq.fna&quot;</span>), append<span class="op">=</span>FALSE,</span>
+<span id="cb24-190"><a href="dada2-pipeline.html#cb24-190" tabindex="-1"></a>                                  compress<span class="op">=</span>FALSE, compression_level<span class="op">=</span>NA, <span class="bu">format</span><span class="op">=</span><span class="st">&quot;fasta&quot;</span>)</span>
+<span id="cb24-191"><a href="dada2-pipeline.html#cb24-191" tabindex="-1"></a>```</span></code></pre></div>
+</div>
+<div id="forward-reads-only" class="section level2 hasAnchor" number="3.3">
+<h2><span class="header-section-number">3.3</span> Forward reads only<a href="dada2-pipeline.html#forward-reads-only" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="dada2-pipeline.html#cb25-1" tabindex="-1"></a>```{r}</span>
+<span id="cb25-2"><a href="dada2-pipeline.html#cb25-2" tabindex="-1"></a><span class="co"># ----------- Load libraries -----------</span></span>
+<span id="cb25-3"><a href="dada2-pipeline.html#cb25-3" tabindex="-1"></a>library(dada2)</span>
+<span id="cb25-4"><a href="dada2-pipeline.html#cb25-4" tabindex="-1"></a>library(decontam)</span>
+<span id="cb25-5"><a href="dada2-pipeline.html#cb25-5" tabindex="-1"></a>library(phyloseq)</span>
+<span id="cb25-6"><a href="dada2-pipeline.html#cb25-6" tabindex="-1"></a>library(DECIPHER)</span>
+<span id="cb25-7"><a href="dada2-pipeline.html#cb25-7" tabindex="-1"></a>library(phangorn)</span>
+<span id="cb25-8"><a href="dada2-pipeline.html#cb25-8" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="dada2-pipeline.html#cb25-9" tabindex="-1"></a><span class="co"># ----------- Getting ready -----------</span></span>
+<span id="cb25-10"><a href="dada2-pipeline.html#cb25-10" tabindex="-1"></a>path <span class="op">=</span> path <span class="op">=</span> <span class="st">&quot;~/project/archaea/raw_data&quot;</span></span>
+<span id="cb25-11"><a href="dada2-pipeline.html#cb25-11" tabindex="-1"></a>fnFs <span class="op">=</span> sort(<span class="bu">list</span>.files(<span class="bu">file</span>.path(path,<span class="st">&quot;fasta&quot;</span>),pattern<span class="op">=</span><span class="st">&quot;_R1_001.fastq&quot;</span>, full.names <span class="op">=</span> TRUE))</span>
+<span id="cb25-12"><a href="dada2-pipeline.html#cb25-12" tabindex="-1"></a>sample.names <span class="op">=</span> sapply(strsplit(basename(fnFs), <span class="st">&quot;_&quot;</span>), `[`, <span class="dv">1</span>)</span>
+<span id="cb25-13"><a href="dada2-pipeline.html#cb25-13" tabindex="-1"></a></span>
+<span id="cb25-14"><a href="dada2-pipeline.html#cb25-14" tabindex="-1"></a><span class="co"># ----------- Inspect quality -----------</span></span>
+<span id="cb25-15"><a href="dada2-pipeline.html#cb25-15" tabindex="-1"></a>plotQualityProfile(fnFs, aggregate<span class="op">=</span>TRUE)</span>
+<span id="cb25-16"><a href="dada2-pipeline.html#cb25-16" tabindex="-1"></a>```</span>
+<span id="cb25-17"><a href="dada2-pipeline.html#cb25-17" tabindex="-1"></a></span>
+<span id="cb25-18"><a href="dada2-pipeline.html#cb25-18" tabindex="-1"></a>⛔<span class="co"># Before executing the next chunk of code inspect the generated graph</span></span>
+<span id="cb25-19"><a href="dada2-pipeline.html#cb25-19" tabindex="-1"></a>⛔<span class="co"># to determine which value to use with function &quot;truncLen&quot; </span></span>
+<span id="cb25-20"><a href="dada2-pipeline.html#cb25-20" tabindex="-1"></a></span>
+<span id="cb25-21"><a href="dada2-pipeline.html#cb25-21" tabindex="-1"></a>```{r}</span>
+<span id="cb25-22"><a href="dada2-pipeline.html#cb25-22" tabindex="-1"></a><span class="co"># ----------- Filter and trim ----------- </span></span>
+<span id="cb25-23"><a href="dada2-pipeline.html#cb25-23" tabindex="-1"></a>filtFs <span class="op">=</span> <span class="bu">file</span>.path(path, <span class="st">&quot;filtered&quot;</span>, paste0(sample.names, <span class="st">&quot;_F_filt.fastq.gz&quot;</span>))</span>
+<span id="cb25-24"><a href="dada2-pipeline.html#cb25-24" tabindex="-1"></a>names(filtFs) <span class="op">=</span> sample.names</span>
+<span id="cb25-25"><a href="dada2-pipeline.html#cb25-25" tabindex="-1"></a></span>
+<span id="cb25-26"><a href="dada2-pipeline.html#cb25-26" tabindex="-1"></a>out <span class="op">=</span> filterAndTrim(fnFs, filtFs, trimLeft <span class="op">=</span> c(<span class="dv">18</span>), truncLen<span class="op">=</span>c(<span class="dv">210</span>),</span>
+<span id="cb25-27"><a href="dada2-pipeline.html#cb25-27" tabindex="-1"></a>                     maxN<span class="op">=</span><span class="dv">0</span>, maxEE<span class="op">=</span><span class="dv">2</span> , truncQ<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb25-28"><a href="dada2-pipeline.html#cb25-28" tabindex="-1"></a>                     compress<span class="op">=</span>TRUE, multithread<span class="op">=</span>TRUE) </span>
+<span id="cb25-29"><a href="dada2-pipeline.html#cb25-29" tabindex="-1"></a></span>
+<span id="cb25-30"><a href="dada2-pipeline.html#cb25-30" tabindex="-1"></a><span class="co"># ----------- Learn error rates ----------- </span></span>
+<span id="cb25-31"><a href="dada2-pipeline.html#cb25-31" tabindex="-1"></a>errF <span class="op">=</span> learnErrors(filtFs, multithread<span class="op">=</span>TRUE, randomize<span class="op">=</span>TRUE)</span>
+<span id="cb25-32"><a href="dada2-pipeline.html#cb25-32" tabindex="-1"></a>plotErrors(errF, nominalQ<span class="op">=</span>TRUE)</span>
+<span id="cb25-33"><a href="dada2-pipeline.html#cb25-33" tabindex="-1"></a>dadaFs <span class="op">=</span> dada(filtFs, err<span class="op">=</span>errF, multithread<span class="op">=</span>TRUE)</span>
+<span id="cb25-34"><a href="dada2-pipeline.html#cb25-34" tabindex="-1"></a></span>
+<span id="cb25-35"><a href="dada2-pipeline.html#cb25-35" tabindex="-1"></a><span class="co"># ----------- Construct amplicon sequence variant table (ASV) ----------- </span></span>
+<span id="cb25-36"><a href="dada2-pipeline.html#cb25-36" tabindex="-1"></a>seqtab <span class="op">=</span> makeSequenceTable(dadaFs)</span>
+<span id="cb25-37"><a href="dada2-pipeline.html#cb25-37" tabindex="-1"></a>dim(seqtab)</span>
+<span id="cb25-38"><a href="dada2-pipeline.html#cb25-38" tabindex="-1"></a></span>
+<span id="cb25-39"><a href="dada2-pipeline.html#cb25-39" tabindex="-1"></a><span class="co"># ----------- Remove chimeras ----------- </span></span>
+<span id="cb25-40"><a href="dada2-pipeline.html#cb25-40" tabindex="-1"></a>seqtab.nochim <span class="op">=</span> removeBimeraDenovo(seqtab, method<span class="op">=</span><span class="st">&quot;consensus&quot;</span>, multithread<span class="op">=</span>TRUE)</span>
+<span id="cb25-41"><a href="dada2-pipeline.html#cb25-41" tabindex="-1"></a>dim(seqtab.nochim)</span>
+<span id="cb25-42"><a href="dada2-pipeline.html#cb25-42" tabindex="-1"></a><span class="bu">sum</span>(seqtab.nochim)<span class="op">/</span><span class="bu">sum</span>(seqtab)</span>
+<span id="cb25-43"><a href="dada2-pipeline.html#cb25-43" tabindex="-1"></a></span>
+<span id="cb25-44"><a href="dada2-pipeline.html#cb25-44" tabindex="-1"></a><span class="co"># ----------- Track reads through pipeline ----------- </span></span>
+<span id="cb25-45"><a href="dada2-pipeline.html#cb25-45" tabindex="-1"></a>getN <span class="op">=</span> function(x) <span class="bu">sum</span>(getUniques(x))</span>
+<span id="cb25-46"><a href="dada2-pipeline.html#cb25-46" tabindex="-1"></a>track <span class="op">=</span> cbind(out, sapply(dadaFs, getN), rowSums(seqtab.nochim))</span>
+<span id="cb25-47"><a href="dada2-pipeline.html#cb25-47" tabindex="-1"></a>colnames(track) <span class="op">=</span> c(<span class="st">&quot;input&quot;</span>, <span class="st">&quot;filtered&quot;</span>, <span class="st">&quot;denoisedF&quot;</span>, <span class="st">&quot;nonchim&quot;</span>)</span>
+<span id="cb25-48"><a href="dada2-pipeline.html#cb25-48" tabindex="-1"></a>rownames(track) <span class="op">=</span> sample.names</span>
+<span id="cb25-49"><a href="dada2-pipeline.html#cb25-49" tabindex="-1"></a>head(track)</span>
+<span id="cb25-50"><a href="dada2-pipeline.html#cb25-50" tabindex="-1"></a></span>
+<span id="cb25-51"><a href="dada2-pipeline.html#cb25-51" tabindex="-1"></a><span class="co"># ----------- Assign taxonomy  -----------</span></span>
+<span id="cb25-52"><a href="dada2-pipeline.html#cb25-52" tabindex="-1"></a>taxa <span class="op">=</span> assignTaxonomy(seqtab.nochim, <span class="st">&quot;/home/16S_db/silva_nr99_v138.1_train_set.fa.gz&quot;</span>, multithread<span class="op">=</span>TRUE, tryRC<span class="op">=</span>TRUE)</span>
+<span id="cb25-53"><a href="dada2-pipeline.html#cb25-53" tabindex="-1"></a></span>
+<span id="cb25-54"><a href="dada2-pipeline.html#cb25-54" tabindex="-1"></a><span class="co"># ----------- Reclassify with arc.cassandre -----------</span></span>
+<span id="cb25-55"><a href="dada2-pipeline.html#cb25-55" tabindex="-1"></a>taxint <span class="op">=</span> subset(taxa, <span class="kw">is</span>.na(phylum))</span>
+<span id="cb25-56"><a href="dada2-pipeline.html#cb25-56" tabindex="-1"></a>taxide <span class="op">=</span> subset(taxa, <span class="op">!</span>(<span class="kw">is</span>.na(domain)))</span>
+<span id="cb25-57"><a href="dada2-pipeline.html#cb25-57" tabindex="-1"></a>dim(taxint)</span>
+<span id="cb25-58"><a href="dada2-pipeline.html#cb25-58" tabindex="-1"></a></span>
+<span id="cb25-59"><a href="dada2-pipeline.html#cb25-59" tabindex="-1"></a>seqtabint <span class="op">=</span> <span class="im">as</span>.data.frame(seqtab.nochim)</span>
+<span id="cb25-60"><a href="dada2-pipeline.html#cb25-60" tabindex="-1"></a>seqtabint <span class="op">=</span> seqtab.nochim[,colnames(seqtab.nochim) <span class="op">%</span><span class="kw">in</span><span class="op">%</span> rownames(taxint)]</span>
+<span id="cb25-61"><a href="dada2-pipeline.html#cb25-61" tabindex="-1"></a></span>
+<span id="cb25-62"><a href="dada2-pipeline.html#cb25-62" tabindex="-1"></a>load(<span class="st">&quot;/home/16S_db/arc.cassandre.trainingset.RData&quot;</span>) </span>
+<span id="cb25-63"><a href="dada2-pipeline.html#cb25-63" tabindex="-1"></a>dna <span class="op">=</span> DNAStringSet(getSequences(seqtabint)) </span>
+<span id="cb25-64"><a href="dada2-pipeline.html#cb25-64" tabindex="-1"></a>ids <span class="op">=</span> IdTaxa(dna, trainingSet, strand<span class="op">=</span><span class="st">&quot;both&quot;</span>, processors<span class="op">=</span>NULL, verbose<span class="op">=</span>FALSE, threshold <span class="op">=</span> <span class="dv">50</span>)</span>
+<span id="cb25-65"><a href="dada2-pipeline.html#cb25-65" tabindex="-1"></a></span>
+<span id="cb25-66"><a href="dada2-pipeline.html#cb25-66" tabindex="-1"></a>taxint <span class="op">=</span> t(sapply(ids, function(x) {</span>
+<span id="cb25-67"><a href="dada2-pipeline.html#cb25-67" tabindex="-1"></a>        m <span class="op">=</span> match(ranks, x$rank)</span>
+<span id="cb25-68"><a href="dada2-pipeline.html#cb25-68" tabindex="-1"></a>        taxa <span class="op">=</span> x$taxon[m]</span>
+<span id="cb25-69"><a href="dada2-pipeline.html#cb25-69" tabindex="-1"></a>        taxa[startsWith(taxa, <span class="st">&quot;Unclassified_&quot;</span>)] <span class="op">=</span> NA</span>
+<span id="cb25-70"><a href="dada2-pipeline.html#cb25-70" tabindex="-1"></a>        taxa</span>
+<span id="cb25-71"><a href="dada2-pipeline.html#cb25-71" tabindex="-1"></a>}))</span>
+<span id="cb25-72"><a href="dada2-pipeline.html#cb25-72" tabindex="-1"></a>colnames(taxint) <span class="op">=</span> ranks<span class="op">;</span> rownames(taxint) <span class="op">=</span> getSequences(seqtabint)</span>
+<span id="cb25-73"><a href="dada2-pipeline.html#cb25-73" tabindex="-1"></a>taxint<span class="op">=</span>subset(<span class="im">as</span>.data.frame(taxint), domain <span class="op">==</span><span class="st">&quot;Archaea&quot;</span>)</span>
+<span id="cb25-74"><a href="dada2-pipeline.html#cb25-74" tabindex="-1"></a>taxide <span class="op">=</span> taxide[<span class="op">!</span>(rownames(taxide) <span class="op">%</span><span class="kw">in</span><span class="op">%</span> rownames(taxint)),]</span>
+<span id="cb25-75"><a href="dada2-pipeline.html#cb25-75" tabindex="-1"></a>taxa <span class="op">=</span> rbind(taxide, <span class="im">as</span>.data.frame(taxint))</span>
+<span id="cb25-76"><a href="dada2-pipeline.html#cb25-76" tabindex="-1"></a></span>
+<span id="cb25-77"><a href="dada2-pipeline.html#cb25-77" tabindex="-1"></a><span class="co"># ----------- Add highest classified rank to unclassified -----------</span></span>
+<span id="cb25-78"><a href="dada2-pipeline.html#cb25-78" tabindex="-1"></a>taxid <span class="op">=</span> <span class="im">as</span>.data.frame(t(taxa))</span>
+<span id="cb25-79"><a href="dada2-pipeline.html#cb25-79" tabindex="-1"></a>taxid[] <span class="op">=</span> lapply(taxid, <span class="im">as</span>.character)</span>
+<span id="cb25-80"><a href="dada2-pipeline.html#cb25-80" tabindex="-1"></a>taxid2<span class="op">=</span> tidyr::fill(taxid, names(taxid),.direction <span class="op">=</span> <span class="st">&quot;down&quot;</span>)</span>
+<span id="cb25-81"><a href="dada2-pipeline.html#cb25-81" tabindex="-1"></a>taxid2<span class="op">=</span> sapply(taxid2, function(x){paste0(<span class="st">&quot;Unclassified_&quot;</span>, x)})</span>
+<span id="cb25-82"><a href="dada2-pipeline.html#cb25-82" tabindex="-1"></a>taxid[<span class="kw">is</span>.na(taxid)] <span class="op">=</span> taxid2[<span class="kw">is</span>.na(taxid)]</span>
+<span id="cb25-83"><a href="dada2-pipeline.html#cb25-83" tabindex="-1"></a>taxid <span class="op">=</span> t(taxid)</span>
+<span id="cb25-84"><a href="dada2-pipeline.html#cb25-84" tabindex="-1"></a>taxid[ taxid <span class="op">==</span> <span class="st">&quot;Unclassified_NA&quot;</span> ] <span class="op">=</span> NA</span>
+<span id="cb25-85"><a href="dada2-pipeline.html#cb25-85" tabindex="-1"></a></span>
+<span id="cb25-86"><a href="dada2-pipeline.html#cb25-86" tabindex="-1"></a>taxid <span class="op">=</span>subset(<span class="im">as</span>.data.frame(taxid), domain <span class="op">==</span><span class="st">&quot;Archaea&quot;</span>)</span>
+<span id="cb25-87"><a href="dada2-pipeline.html#cb25-87" tabindex="-1"></a>seqtab.nochim <span class="op">=</span> seqtab.nochim[,colnames(seqtab.nochim) <span class="op">%</span><span class="kw">in</span><span class="op">%</span> rownames(taxid)]</span>
+<span id="cb25-88"><a href="dada2-pipeline.html#cb25-88" tabindex="-1"></a></span>
+<span id="cb25-89"><a href="dada2-pipeline.html#cb25-89" tabindex="-1"></a><span class="co"># ----------- Remove contaminants -----------</span></span>
+<span id="cb25-90"><a href="dada2-pipeline.html#cb25-90" tabindex="-1"></a>meta <span class="op">=</span> read.table(<span class="st">&quot;metadata.csv&quot;</span>, sep<span class="op">=</span><span class="st">&quot;,&quot;</span>, row.names<span class="op">=</span><span class="dv">1</span>, header<span class="op">=</span>TRUE)</span>
+<span id="cb25-91"><a href="dada2-pipeline.html#cb25-91" tabindex="-1"></a>ps <span class="op">=</span> phyloseq(otu_table(t(seqtab.nochim), taxa_are_rows<span class="op">=</span>TRUE), tax_table(<span class="im">as</span>.matrix(taxid)), sample_data(meta))</span>
+<span id="cb25-92"><a href="dada2-pipeline.html#cb25-92" tabindex="-1"></a></span>
+<span id="cb25-93"><a href="dada2-pipeline.html#cb25-93" tabindex="-1"></a>contamdf.prev <span class="op">=</span> isContaminant(ps, method<span class="op">=</span><span class="st">&quot;prevalence&quot;</span>, neg<span class="op">=</span><span class="st">&quot;negative&quot;</span>, threshold<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb25-94"><a href="dada2-pipeline.html#cb25-94" tabindex="-1"></a>table(contamdf.prev$contaminant) <span class="co"># Get the count of TRUE contaminant vs FALSE</span></span>
+<span id="cb25-95"><a href="dada2-pipeline.html#cb25-95" tabindex="-1"></a>ps.noncontam <span class="op">=</span> prune_taxa(<span class="op">!</span>contamdf.prev$contaminant, ps) <span class="co"># Remove sequences identified as contaminant</span></span>
+<span id="cb25-96"><a href="dada2-pipeline.html#cb25-96" tabindex="-1"></a>ps_decontam<span class="op">=</span>subset_samples(ps.noncontam, <span class="op">!</span>negative<span class="op">==</span><span class="st">&quot;TRUE&quot;</span>) <span class="co"># Remove negative control samples</span></span>
+<span id="cb25-97"><a href="dada2-pipeline.html#cb25-97" tabindex="-1"></a></span>
+<span id="cb25-98"><a href="dada2-pipeline.html#cb25-98" tabindex="-1"></a><span class="co"># ----------- Phylogenetic tree -----------</span></span>
+<span id="cb25-99"><a href="dada2-pipeline.html#cb25-99" tabindex="-1"></a>asv_tab<span class="op">=</span><span class="im">as</span>.data.frame(otu_table(ps_decontam))</span>
+<span id="cb25-100"><a href="dada2-pipeline.html#cb25-100" tabindex="-1"></a>seqs <span class="op">=</span> getSequences(t(asv_tab))</span>
+<span id="cb25-101"><a href="dada2-pipeline.html#cb25-101" tabindex="-1"></a>names(seqs) <span class="op">=</span> seqs</span>
+<span id="cb25-102"><a href="dada2-pipeline.html#cb25-102" tabindex="-1"></a>seq_align <span class="op">=</span> AlignSeqs(DNAStringSet(seqs), anchor<span class="op">=</span>NA, processors<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb25-103"><a href="dada2-pipeline.html#cb25-103" tabindex="-1"></a>path<span class="op">=</span><span class="st">&quot;combined_fastq&quot;</span></span>
+<span id="cb25-104"><a href="dada2-pipeline.html#cb25-104" tabindex="-1"></a>writeXStringSet(seq_align, <span class="bu">file</span> <span class="op">=</span> <span class="bu">file</span>.path(path,<span class="st">&quot;align.fasta&quot;</span>),<span class="bu">format</span><span class="op">=</span><span class="st">&quot;fasta&quot;</span>)</span>
+<span id="cb25-105"><a href="dada2-pipeline.html#cb25-105" tabindex="-1"></a>```</span>
+<span id="cb25-106"><a href="dada2-pipeline.html#cb25-106" tabindex="-1"></a></span>
+<span id="cb25-107"><a href="dada2-pipeline.html#cb25-107" tabindex="-1"></a><span class="co"># ----------- Generate tree using FastTree -----------  </span></span>
+<span id="cb25-108"><a href="dada2-pipeline.html#cb25-108" tabindex="-1"></a></span>
+<span id="cb25-109"><a href="dada2-pipeline.html#cb25-109" tabindex="-1"></a>```{bash}</span>
+<span id="cb25-110"><a href="dada2-pipeline.html#cb25-110" tabindex="-1"></a><span class="co"># Change directory to the one containing the align.fasta file</span></span>
+<span id="cb25-111"><a href="dada2-pipeline.html#cb25-111" tabindex="-1"></a>cd <span class="op">~/</span>project<span class="op">/</span>archaea<span class="op">/</span>raw_data<span class="op">/</span>combined_fastq</span>
+<span id="cb25-112"><a href="dada2-pipeline.html#cb25-112" tabindex="-1"></a>fasttree <span class="op">-</span>nt <span class="op">-</span>gtr  align.fasta <span class="op">&gt;</span> align_tree</span>
+<span id="cb25-113"><a href="dada2-pipeline.html#cb25-113" tabindex="-1"></a>``` </span>
+<span id="cb25-114"><a href="dada2-pipeline.html#cb25-114" tabindex="-1"></a></span>
+<span id="cb25-115"><a href="dada2-pipeline.html#cb25-115" tabindex="-1"></a><span class="co"># ----------- Root tree -----------</span></span>
+<span id="cb25-116"><a href="dada2-pipeline.html#cb25-116" tabindex="-1"></a></span>
+<span id="cb25-117"><a href="dada2-pipeline.html#cb25-117" tabindex="-1"></a>```{r}</span>
+<span id="cb25-118"><a href="dada2-pipeline.html#cb25-118" tabindex="-1"></a>Tree <span class="op">=</span> ape::read.tree(<span class="bu">file</span>.path(path,<span class="st">&quot;tree&quot;</span>))</span>
+<span id="cb25-119"><a href="dada2-pipeline.html#cb25-119" tabindex="-1"></a>Tree.midpoint <span class="op">=</span> phangorn::midpoint(Tree)</span>
+<span id="cb25-120"><a href="dada2-pipeline.html#cb25-120" tabindex="-1"></a>ape::write.tree(Tree.midpoint,<span class="bu">file</span> <span class="op">=</span> <span class="bu">file</span>.path(path,<span class="st">&quot;tree.midpoint&quot;</span>))</span>
+<span id="cb25-121"><a href="dada2-pipeline.html#cb25-121" tabindex="-1"></a></span>
+<span id="cb25-122"><a href="dada2-pipeline.html#cb25-122" tabindex="-1"></a><span class="co"># ----------- Add rooted tree to phyloseq objet -----------</span></span>
+<span id="cb25-123"><a href="dada2-pipeline.html#cb25-123" tabindex="-1"></a>tree <span class="op">=</span> phy_tree(Tree.midpoint)</span>
+<span id="cb25-124"><a href="dada2-pipeline.html#cb25-124" tabindex="-1"></a>ps1 <span class="op">=</span> merge_phyloseq(ps_decontam, tree)</span>
+<span id="cb25-125"><a href="dada2-pipeline.html#cb25-125" tabindex="-1"></a></span>
+<span id="cb25-126"><a href="dada2-pipeline.html#cb25-126" tabindex="-1"></a><span class="co"># ----------- Add DNA sequence -----------</span></span>
+<span id="cb25-127"><a href="dada2-pipeline.html#cb25-127" tabindex="-1"></a>dna <span class="op">=</span> Biostrings::DNAStringSet(taxa_names(ps_decontam))</span>
+<span id="cb25-128"><a href="dada2-pipeline.html#cb25-128" tabindex="-1"></a>names(dna) <span class="op">=</span> taxa_names(ps_decontam)</span>
+<span id="cb25-129"><a href="dada2-pipeline.html#cb25-129" tabindex="-1"></a>ps1<span class="op">=</span>merge_phyloseq(ps1, dna)</span>
+<span id="cb25-130"><a href="dada2-pipeline.html#cb25-130" tabindex="-1"></a></span>
+<span id="cb25-131"><a href="dada2-pipeline.html#cb25-131" tabindex="-1"></a></span>
+<span id="cb25-132"><a href="dada2-pipeline.html#cb25-132" tabindex="-1"></a><span class="co"># ----------- Shorten ASV name -----------</span></span>
+<span id="cb25-133"><a href="dada2-pipeline.html#cb25-133" tabindex="-1"></a>taxa_names(ps1) <span class="op">=</span> paste0(<span class="st">&quot;ASV&quot;</span>, seq(ntaxa(ps1)))</span>
+<span id="cb25-134"><a href="dada2-pipeline.html#cb25-134" tabindex="-1"></a></span>
+<span id="cb25-135"><a href="dada2-pipeline.html#cb25-135" tabindex="-1"></a><span class="co"># ----------- Save tables -----------</span></span>
+<span id="cb25-136"><a href="dada2-pipeline.html#cb25-136" tabindex="-1"></a>saving_path <span class="op">=</span> <span class="st">&quot;~/project/archaea/int_data&quot;</span></span>
+<span id="cb25-137"><a href="dada2-pipeline.html#cb25-137" tabindex="-1"></a></span>
+<span id="cb25-138"><a href="dada2-pipeline.html#cb25-138" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(tax_table(ps1), <span class="st">&quot;matrix&quot;</span>)), <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_taxa.csv&quot;</span>))</span>
+<span id="cb25-139"><a href="dada2-pipeline.html#cb25-139" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(otu_table(ps1), <span class="st">&quot;matrix&quot;</span>)),<span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_asv.csv&quot;</span>))</span>
+<span id="cb25-140"><a href="dada2-pipeline.html#cb25-140" tabindex="-1"></a>write.csv(<span class="im">as</span>.data.frame(<span class="im">as</span>(sample_data(ps1), <span class="st">&quot;matrix&quot;</span>)), <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_meta.csv&quot;</span>))</span>
+<span id="cb25-141"><a href="dada2-pipeline.html#cb25-141" tabindex="-1"></a>tree.raw <span class="op">=</span> phy_tree(ps1)</span>
+<span id="cb25-142"><a href="dada2-pipeline.html#cb25-142" tabindex="-1"></a>ape::write.tree(tree.raw , <span class="bu">file</span> <span class="op">=</span> glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_tree.tree&quot;</span>))</span>
+<span id="cb25-143"><a href="dada2-pipeline.html#cb25-143" tabindex="-1"></a>ps1 <span class="op">%&gt;%</span> refseq() <span class="op">%&gt;%</span> Biostrings::writeXStringSet(glue(<span class="st">&quot;</span><span class="sc">{path}</span><span class="st">/raw_refseq.fna&quot;</span>), append<span class="op">=</span>FALSE,</span>
+<span id="cb25-144"><a href="dada2-pipeline.html#cb25-144" tabindex="-1"></a>                                  compress<span class="op">=</span>FALSE, compression_level<span class="op">=</span>NA, <span class="bu">format</span><span class="op">=</span><span class="st">&quot;fasta&quot;</span>)</span>
+<span id="cb25-145"><a href="dada2-pipeline.html#cb25-145" tabindex="-1"></a></span>
+<span id="cb25-146"><a href="dada2-pipeline.html#cb25-146" tabindex="-1"></a>```</span></code></pre></div>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="basic-r-markdown.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="rarefaction.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/01-DADA2.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>
