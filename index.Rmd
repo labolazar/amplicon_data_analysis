@@ -17,14 +17,14 @@ github-repo: rstudio/bookdown-demo
 
 # Introduction
 
-This guide is intended to walk the user through the typical R workflow for processing raw amplicon sequencing data from paired end Illumina Miseq data into a table of exact amplicon sequence variants (ASVs) present in each sample. Please note that many other extensive documentation and tutorial pages are available for packages used in this workflow, notably [dada2]() and [phyloseq](). Therefore, for issues or for further questions about certain functions I always recommend consulting the available R documentation and if available the relevant github issues sites for answers. 
+This guide is intended to walk the user through the typical R workflow for processing raw amplicon sequencing data from paired end Illumina Miseq data into a table of exact amplicon sequence variants (ASVs) present in each sample. Please note that many other extensive documentation and tutorial pages are available for packages used in this workflow, notably [DADA2](https://benjjneb.github.io/dada2/tutorial.html) and [phyloseq](https://joey711.github.io/phyloseq/). Therefore, for issues or for further questions about certain functions I always recommend consulting the available R documentation and if available the relevant github issues sites for answers. 
 
 This guide assumes the following : 
 
-(1) The user has access to one of the server from the Lazar lab (Orion, Hercules, Ulysse). Please see section [Remote login] for more details. 
+(1) The user has access to one of the server from the Lazar lab (Orion, Hercules, Ulysse). 
 (2) The user has an active VPN access. 
-(3) The paired-end fastq files from Illumina Miseq sequencing were transferred to the user's home directory of her/his server. 
-(4) The user has followed the `Introduction to linux` guide and is comfortable with basic command line functions such as : 
+(3) The paired-end fastq files from Illumina Miseq sequencing were transferred to the user's home directory of her/his server. Please see section [Download fastqs] for more details. 
+(4) The user has followed the `Introduction to linux` guide (available on the lab's TEAM) and is comfortable with basic command line functions such as : 
 
     - listing files inside a current directory (`ls`) ;
     - moving from one directory to the other (`cd`) ; 
@@ -75,7 +75,9 @@ Further reading about organizing files and foldes :
 
 - [Organizing your data](https://www.mdc-berlin.de/research-data-management/organizing-your-data) by The Max Delbrück Center 
 
-## Download fastqs files from Illumina BaseSpace Sequence Hub 
+## Download fastqs 
+
+How to download fastqs files from Illumina BaseSpace Sequence Hub 
 
 1. Open the link found in the email sent by Geneviève Bourret. 
 
